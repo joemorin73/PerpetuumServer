@@ -30,6 +30,9 @@ namespace Perpetuum.Services.Sessions
 
         void SendMessage(MessageBuilder builder);
         void SendMessage(IMessage message);
+        // to expose these to our chat command interface.
+        IRequest CreateLocalRequest(string data);
+        void HandleLocalRequest(IRequest request);
 
         void Start();
 
@@ -312,6 +315,11 @@ namespace Perpetuum.Services.Sessions
             }
         }
 
+        public void HandleLocalRequest(IRequest request)
+        {
+            HandleRequest(request);
+        }
+
         private void HandleRequest(IRequest request)
         {
             if (request is IZoneRequest zoneRequest)
@@ -326,6 +334,11 @@ namespace Perpetuum.Services.Sessions
 
             var requestHandler = _requestHandlerFactory(request.Command);
             requestHandler.HandleRequest(request);
+        }
+
+        public IRequest CreateLocalRequest(string data)
+        {
+            return CreateRequest(data);
         }
 
         private IRequest CreateRequest(string data)
