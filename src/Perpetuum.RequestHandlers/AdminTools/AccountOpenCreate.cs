@@ -2,6 +2,7 @@
 using Perpetuum.Data;
 using Perpetuum.Host.Requests;
 using Perpetuum.Services.Relay;
+using System;
 
 namespace Perpetuum.RequestHandlers.AdminTools
 {
@@ -18,8 +19,18 @@ namespace Perpetuum.RequestHandlers.AdminTools
 
         public void HandleRequest(IRequest request)
         {
-            var email = request.Data.GetOrDefault<string>(k.email);
+            var email = string.Empty;
             var password = request.Data.GetOrDefault<string>(k.password);
+            
+            // check to see if email address is valid.
+            try
+            {
+                email = new System.Net.Mail.MailAddress(request.Data.GetOrDefault<string>(k.email)).Address;
+            }
+            catch
+            {
+                throw new PerpetuumException(ErrorCodes.EmailNotConfirmed);
+            }
 
             //is the server open?
             var si = _serverInfoManager.GetServerInfo();
