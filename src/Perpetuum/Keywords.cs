@@ -154,6 +154,7 @@ namespace Perpetuum
         public const string clear = "clear";
         public const string client = "client";
         public const string clientID = "clientID";
+        public const string clientver = "clientVer";
         public const string clockOffset = "clockOffset";
         public const string clockStart = "clockStart";
         public const string clockStop = "clockStop";
@@ -998,6 +999,7 @@ namespace Perpetuum
         public const string startedBy = "startedBy";
         public const string startTime = "startTime";
         public const string state = "state";
+        public const string steambuildid = "steamBuildId";
         public const string steps = "steps";
         public const string structureEid = "structureEid";
         public const string sub = "sub";

@@ -18,6 +18,8 @@ namespace Perpetuum.RequestHandlers
         {
             var email = request.Data.GetOrDefault<string>(k.email);
             var password = request.Data.GetOrDefault<string>(k.password);
+            var steambuild = request.Data.GetOrDefault<int>(k.steambuildid);
+            var clientver = request.Data.GetOrDefault<string>(k.clientver);
             return _accountRepository.Get(email, password);
         }
     }
