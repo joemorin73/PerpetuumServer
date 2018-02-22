@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Perpetuum.Network
@@ -74,6 +75,15 @@ namespace Perpetuum.Network
         {
             var source = new TaskCompletionSource<IMessage>();
             EnqueueCompletionSource(clientMessage.Command,source);
+            Send(clientMessage.ToBytes());
+            return source.Task;
+        }
+
+        public Task<IMessage> SendAsync(IMessage clientMessage, CancellationToken ct)
+        {
+            var source = new TaskCompletionSource<IMessage>();
+            ct.Register(() => source.TrySetCanceled(), useSynchronizationContext: false);
+            EnqueueCompletionSource(clientMessage.Command, source);
             Send(clientMessage.ToBytes());
             return source.Task;
         }

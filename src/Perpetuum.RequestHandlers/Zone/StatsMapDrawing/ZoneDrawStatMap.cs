@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,11 +27,14 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
     public partial class ZoneDrawStatMap : IRequestHandler<IZoneRequest>
     {
         private IZone _zone;
+        private IRequest _request;
         private readonly IFileSystem _fileSystem;
         private readonly SaveBitmapHelper _saveBitmapHelper;
         private readonly MissionDataCache _missionDataCache;
         private readonly Dictionary<string, Action<IRequest>> _actions = new Dictionary<string, Action<IRequest>>();
         private string _typeString;
+        private int _streamit;
+
 
         public ZoneDrawStatMap(IFileSystem fileSystem,SaveBitmapHelper saveBitmapHelper,MissionDataCache missionDataCache)
         {
@@ -46,6 +50,7 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
             RegisterCreator("decorblock", CreateDecorBlockingMap);
             RegisterCreator("electroplant", CreateElectroPlantMap);
             RegisterCreator("structures", CreateStructuresMap);
+            RegisterCreator("players", CreatePlayersMap);
             RegisterCreator("wall", CreateWallMap);
             RegisterCreator("wallpossible", CreateWallPossibleMap);
             RegisterCreator("wallplaces", CreateWallPlaces);
@@ -80,14 +85,31 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
 
             bmp.WithGraphics(g => g.DrawString(_zone.Configuration.Name, new Font("Tahoma", 20), Brushes.Red, new PointF(10, 10)));
             var fileName = "stat_" + postfix;
-            _saveBitmapHelper.SaveBitmap(_zone,bmp,fileName );
+
+            if (_streamit == 1) // send to client.
+            {
+                using (var ms = new MemoryStream())
+                {
+                    bmp.Save(ms, ImageFormat.Png);
+                    var Base64 = Convert.ToBase64String(ms.GetBuffer());
+                    Message.Builder.FromRequest(_request).SetData("name", fileName).SetData("img", Base64).Send();
+                }
+            }
+            else // save locally.
+            {
+                _saveBitmapHelper.SaveBitmap(_zone, bmp, fileName);
+            }
         }
 
         public void HandleRequest(IZoneRequest request)
         {
             _zone = request.Zone;
+            _request = request;
             var type = request.Data.GetOrDefault<string>(k.type);
+            var streamit = request.Data.GetOrDefault<int>("stream");
             _typeString = type; //save for later use
+            _streamit = streamit;
+
 
             var action = _actions.GetOrDefault(type);
             if (action != null)
@@ -371,6 +393,27 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 }
             });
         }
+
+        private Bitmap CreatePlayersMap()
+        {
+            return CreateAltitudeBitmap().WithGraphics(g =>
+            {
+                foreach (var unit in _zone.GetCharacters())
+                {
+                    var size = 12;
+                    var pen = Pens.Red;
+
+                    var x = unit.GetPlayerRobotFromZone().CurrentPosition.intX - (size / 2);
+                    var y = unit.GetPlayerRobotFromZone().CurrentPosition.intY - (size / 2);
+
+                    g.DrawEllipse(pen, x, y, size, size);
+                    const int width = 4;
+                    g.DrawEllipse(Pens.BlueViolet, x, y, width, width);
+                    g.DrawString(unit.Nick, new Font("Tahoma", 12), Brushes.Red, x+10, y+10);
+                }
+            });
+        }
+
 
         private Bitmap CreateWallMap()
         {

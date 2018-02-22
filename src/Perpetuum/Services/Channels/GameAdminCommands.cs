@@ -655,10 +655,11 @@ namespace Perpetuum.Services.Channels
 
             if (command[0] == "#zonedrawstatmap")
             {
-
+                bool.TryParse(command[2], out bool streamit);
                 Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
-                    { "type", command[1] }
+                    { "type", command[1] },
+                    { "stream", streamit }
                 };
 
                 string cmd = string.Format("zoneDrawStatMap:zone_{0}:{1}", sender.ZoneId, GenxyConverter.Serialize(dictionary));
