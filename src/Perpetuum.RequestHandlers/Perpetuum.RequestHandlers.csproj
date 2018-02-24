@@ -277,6 +277,7 @@
     <Compile Include="ItemCountOnZone.cs" />
     <Compile Include="ItemShopBuy.cs" />
     <Compile Include="ItemShopList.cs" />
+    <Compile Include="ListCommands.cs" />
     <Compile Include="ListContainer.cs" />
     <Compile Include="Mails\MailDelete.cs" />
     <Compile Include="Mails\MailDeleteFolder.cs" />

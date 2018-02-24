@@ -2107,6 +2107,7 @@ namespace Perpetuum.Bootstrapper
             RegisterRequestHandler<AccountDelete>(Commands.AccountDelete);
             RegisterRequestHandler<ServerInfoGet>(Commands.ServerInfoGet);
             RegisterRequestHandler<ServerInfoSet>(Commands.ServerInfoSet);
+            RegisterRequestHandler<ListCommands>(Commands.ListCommands);
 
             // Open account commands
             RegisterRequestHandler<AccountOpenCreate>(Commands.AccountOpenCreate);

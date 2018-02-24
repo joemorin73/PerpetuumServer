@@ -5317,6 +5317,13 @@ namespace Perpetuum
             }
         };
 
+        // list commands supported by this server.
+        public static readonly Command ListCommands = new Command
+        {
+            Text = "listCommands",
+            AccessLevel = AccessLevel.gameAdmin
+        };
+
 
         // changes the password of the sender's account - safe to be available always
         //
