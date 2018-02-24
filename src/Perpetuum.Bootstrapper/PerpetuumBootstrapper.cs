@@ -1552,6 +1552,7 @@ namespace Perpetuum.Bootstrapper
             _builder.RegisterType<CorporateInvites>();
             _builder.RegisterType<BulletinHandler>().As<IBulletinHandler>();
             _builder.RegisterType<VoteHandler>().As<IVoteHandler>();
+            _builder.RegisterType<LayerFileIO>();
 
             _builder.RegisterType<ReprocessSessionMember>();
             _builder.RegisterType<ReprocessSession>();
@@ -2492,6 +2493,8 @@ namespace Perpetuum.Bootstrapper
             RegisterZoneRequestHandler<ZoneSampleDecorEnvironment>(Commands.ZoneSampleDecorEnvironment);
             RegisterZoneRequestHandler<ZoneDrawDecorEnvByDef>(Commands.ZoneDrawDecorEnvByDef);
             RegisterZoneRequestHandler<ZoneDrawAllDecors>(Commands.ZoneDrawAllDecors);
+            RegisterZoneRequestHandler<ZoneDecorLock>(Commands.ZoneDecorLock);
+            RegisterZoneRequestHandler<ZoneDrawAllBlocks>(Commands.ZoneDrawAllBlocks);
             RegisterZoneRequestHandler<ZoneEnvironmentDescriptionList>(Commands.ZoneEnvironmentDescriptionList);
             RegisterZoneRequestHandler<ZoneSampleEnvironment>(Commands.ZoneSampleEnvironment);
             RegisterZoneRequestHandler<ZoneCreateTeleportColumn>(Commands.ZoneCreateTeleportColumn);

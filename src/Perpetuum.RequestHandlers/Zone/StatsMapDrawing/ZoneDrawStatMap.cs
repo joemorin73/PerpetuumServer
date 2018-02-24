@@ -258,7 +258,7 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
             foreach (var presence in _zone.PresenceManager.GetPresences().OfType<RoamingPresence>())
             {
                 graphics.DrawRectangle(Pens.Blue, presence.Area.X1, presence.Area.Y1, presence.Area.Width, presence.Area.Height);
-                graphics.DrawString(presence.Configuration.name, new Font("Tahoma", 8), Brushes.White, presence.Area.X1, presence.Area.Y1);
+                graphics.DrawString(presence.Configuration.name, new Font("Tahoma", 8), Brushes.Red, presence.Area.X1, presence.Area.Y1);
             }
         }
 
@@ -276,6 +276,7 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
 
                 graphics.DrawEllipse(Pens.BlueViolet, txSpawnMax, tySpawnMax, widthSpawnMax, widthSpawnMax);
                 graphics.DrawEllipse(Pens.Red, txHomeRange, tyHomeRange, widthHome, widthHome);
+                graphics.DrawString(flock.Configuration.Name, new Font("Tahoma", 10), Brushes.Red, txSpawnMax, tySpawnMax);
             }
         }
 

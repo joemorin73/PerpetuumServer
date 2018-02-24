@@ -1145,6 +1145,12 @@ namespace Perpetuum
             }
         };
 
+        public static readonly Command ZoneDrawAllBlocks = new Command
+        {
+            Text = "zoneDrawAllBlocks",
+            AccessLevel = AccessLevel.admin,
+        };
+
         public static readonly Command ZoneEnvironmentDescriptionList = new Command
         {
             Text = "zoneEnvironmentDescriptionList",

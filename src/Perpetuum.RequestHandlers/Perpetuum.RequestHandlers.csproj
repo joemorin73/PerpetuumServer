@@ -574,6 +574,7 @@
     <Compile Include="Zone\ZoneDecorAdd.cs" />
     <Compile Include="Zone\ZoneDecorDelete.cs" />
     <Compile Include="Zone\ZoneDecorLock.cs" />
+    <Compile Include="Zone\ZoneDrawAllBlocks.cs" />
     <Compile Include="Zone\ZoneDecorSet.cs" />
     <Compile Include="Zone\ZoneDrawAllDecors.cs" />
     <Compile Include="Zone\ZoneDrawBeam.cs" />
