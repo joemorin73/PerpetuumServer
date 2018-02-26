@@ -589,11 +589,14 @@
     <Compile Include="Zone\ZoneForceDeconstruct.cs" />
     <Compile Include="Zone\ZoneGetBuildings.cs" />
     <Compile Include="Zone\ZoneGetPlantsMode.cs" />
+    <Compile Include="Zone\ZoneGetPlayerTarget.cs" />
     <Compile Include="Zone\ZoneGetQueueInfo.cs" />
     <Compile Include="Zone\ZoneHealAllWalls.cs" />
     <Compile Include="Zone\ZoneItemShopBuy.cs" />
     <Compile Include="Zone\ZoneItemShopList.cs" />
     <Compile Include="Zone\ZoneKillNPlants.cs" />
+    <Compile Include="Zone\ZoneListItems.cs" />
+    <Compile Include="Zone\ZoneListPlayers.cs" />
     <Compile Include="Zone\ZoneListPresences.cs" />
     <Compile Include="Zone\ZoneMakeGotoXY.cs" />
     <Compile Include="Zone\ZoneMoveUnit.cs" />

@@ -2033,7 +2033,7 @@ namespace Perpetuum.Bootstrapper
             RegisterRequestHandler<ZoneSOS>(Commands.ZoneSOS);
             
             RegisterRequestHandler<ZoneGetZoneObjectDebugInfo>(Commands.ZoneGetZoneObjectDebugInfo);
-            RegisterRequestHandler<ZoneDrawBlockingByEid>(Commands.ZoneDrawBlockingByEid);
+            RegisterRequestHandler<ZoneDrawBlockingByEid>(Commands.ZoneDrawBlockingByEid);            
 
 
             RegisterRequestHandler<GangCreate>(Commands.GangCreate);
@@ -2561,6 +2561,9 @@ namespace Perpetuum.Bootstrapper
             RegisterZoneRequestHandler<ZoneDrawBlockingByDefinition>(Commands.ZoneDrawBlockingByDefinition);
             RegisterZoneRequestHandler<ZoneCleanBlockingByDefinition>(Commands.ZoneCleanBlockingByDefinition);
             RegisterZoneRequestHandler<ZoneCleanObstacleBlocking>(Commands.ZoneCleanObstacleBlocking);
+            RegisterZoneRequestHandler<ZoneListPlayers>(Commands.ZoneListPlayers);
+            RegisterZoneRequestHandler<ZoneListItems>(Commands.ZoneListItems);
+            RegisterZoneRequestHandler<ZoneGetPlayerTarget>(Commands.ZoneGetPlayerTarget);
 
 
 

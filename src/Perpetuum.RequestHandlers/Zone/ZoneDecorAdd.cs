@@ -50,10 +50,12 @@ namespace Perpetuum.RequestHandlers.Zone
                     decorDescription.id = newId;
                     zone.DecorHandler.SetDecor(decorDescription);
                     zone.DecorHandler.SpreadDecorChanges(decorDescription);
-                });
-                
+                    // send this back. we need it.
+                    Message.Builder.FromRequest(request).WithData(decorDescription.ToDictionary()).Send();
+                });                
+
                 scope.Complete();
-            }
+            }            
         }
     }
 }

@@ -1325,6 +1325,12 @@ namespace Perpetuum
             AccessLevel = AccessLevel.admin
         };
 
+        public static readonly Command ZoneListItems = new Command
+        {
+            Text = "zoneListItems",
+            AccessLevel = AccessLevel.admin
+        };
+
         public static readonly Command ZoneNpcFlockSet = new Command
         {
             Text = "zoneNPCFlockSet",
@@ -5322,6 +5328,22 @@ namespace Perpetuum
         {
             Text = "listCommands",
             AccessLevel = AccessLevel.gameAdmin
+        };
+
+        public static readonly Command ZoneListPlayers = new Command
+        {
+            Text = "zoneListPlayers",
+            AccessLevel = AccessLevel.gameAdmin
+        };
+
+        public static readonly Command ZoneGetPlayerTarget = new Command
+        {
+            Text = "zoneGetPlayerTarget",
+            AccessLevel = AccessLevel.gameAdmin,
+            Arguments =
+            {
+                new Argument<int>(k.characterID)
+            }
         };
 
 

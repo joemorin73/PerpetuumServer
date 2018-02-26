@@ -9,24 +9,26 @@ namespace Perpetuum.RequestHandlers.Zone
         {
             var layerName = request.Data.GetOrDefault<string>(k.layerName);
 
-            switch (layerName)
+            using (new TerrainUpdateMonitor(request.Zone))
             {
-                case k.plants:
-                    request.Zone.Terrain.Plants.UpdateAll((x, y, pi) =>
-                    {
-                        pi.Clear();
-                        return pi;
-                    });
-                    break;
-                case k.control:
-                    request.Zone.Terrain.Controls.UpdateAll((x, y, ci) => new TerrainControlInfo());
-                    break;
+                switch (layerName)
+                {
+                    case k.plants:
+                        request.Zone.Terrain.Plants.UpdateAll((x, y, pi) =>
+                        {
+                            pi.Clear();
+                            return pi;
+                        });
+                        break;
+                    case k.control:
+                        request.Zone.Terrain.Controls.UpdateAll((x, y, ci) => new TerrainControlInfo());
+                        break;
 
-                case k.blocks:
-                    request.Zone.Terrain.Blocks.UpdateAll((x, y, bi) => new BlockingInfo());
-                    break;
+                    case k.blocks:
+                        request.Zone.Terrain.Blocks.UpdateAll((x, y, bi) => new BlockingInfo());
+                        break;
+                }
             }
-
             Message.Builder.FromRequest(request).WithOk().Send();
         }
     }
