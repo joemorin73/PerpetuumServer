@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Perpetuum.Data;
+using Perpetuum.EntityFramework;
+using Perpetuum.GenXY;
 using Perpetuum.Items;
 
 namespace Perpetuum.Services.Looting
@@ -11,7 +13,9 @@ namespace Perpetuum.Services.Looting
     {
         public void Add(LootContainer container,LootItem lootItem)
         {
-            const string insertCmdText = "insert into lootitems (id,containereid,definition,quantity,health,repackaged) values (@id,@containerEid,@definition,@quantity,@health,@repackaged)";
+            const string insertCmdText = "insert into lootitems (id,containereid,definition,quantity,health,repackaged,dynprop) values (@id,@containerEid,@definition,@quantity,@health,@repackaged,@dynprop)";
+
+            var stuff = lootItem.ItemInfo.EntityDynamicProperties.ToGenxyString();
 
             Db.Query().CommandText(insertCmdText)
                 .SetParameter("@id", lootItem.id)
@@ -20,6 +24,7 @@ namespace Perpetuum.Services.Looting
                 .SetParameter("@quantity", lootItem.ItemInfo.Quantity)
                 .SetParameter("@health", lootItem.ItemInfo.Health)
                 .SetParameter("@repackaged", lootItem.ItemInfo.IsRepackaged)
+                .SetParameter("@dynprop", stuff.ToString())
                 .ExecuteNonQuery().ThrowIfEqual(0, ErrorCodes.SQLInsertError);
         }
 
@@ -56,7 +61,7 @@ namespace Perpetuum.Services.Looting
 
         public LootItem Get(LootContainer container, Guid id)
         {
-            const string selectCmdText = "select id,definition,quantity,health,repackaged from lootitems where id = @id and containereid = @containerEid";
+            const string selectCmdText = "select id,definition,quantity,health,repackaged,dynprop from lootitems where id = @id and containereid = @containerEid";
             var record = Db.Query().CommandText(selectCmdText)
                                  .SetParameter("id", id)
                                  .SetParameter("@containerEid", container.Eid)
@@ -71,14 +76,14 @@ namespace Perpetuum.Services.Looting
 
         public IEnumerable<LootItem> GetAll(LootContainer container)
         {
-            const string selectCmdText = "select id,definition,quantity,health,repackaged from lootitems where containereid = @containerEid and quantity > 0";
+            const string selectCmdText = "select id,definition,quantity,health,repackaged,dynprop from lootitems where containereid = @containerEid and quantity > 0";
             var records = Db.Query().CommandText(selectCmdText).SetParameter("@containerEid",container.Eid).Execute();
             return records.Select(CreateLootItemFromRecord).ToList();
         }
 
         public IEnumerable<LootItem> GetByDefinition(LootContainer container,int definition)
         {
-            const string selectCmdText = "select id,definition,quantity,health,repackaged from lootitems where containereid = @containerEid and quantity > 0 and definition = @definition";
+            const string selectCmdText = "select id,definition,quantity,health,repackaged,dynprop from lootitems where containereid = @containerEid and quantity > 0 and definition = @definition";
             var records = Db.Query().CommandText(selectCmdText).SetParameter("@containerEid",container.Eid).SetParameter("@definition",definition).Execute();
             return records.Select(CreateLootItemFromRecord).ToList();
         }
@@ -91,7 +96,15 @@ namespace Perpetuum.Services.Looting
             var health = record.GetValue<double>("health");
             var repackaged = record.GetValue<bool>("repackaged");
 
-            var itemInfo = new ItemInfo(definition, quantity) {Health = (float) health, IsRepackaged = repackaged};
+            var genxy = ((GenxyString)record.GetValue<string>("dynprop")).ToDictionary();
+            EntityDynamicProperties entityDynamicProperties = new EntityDynamicProperties();
+
+            foreach (var item in genxy)
+            {
+                entityDynamicProperties.GetOrAdd(item.Key, item.Value);
+            }
+
+            var itemInfo = new ItemInfo(definition, entityDynamicProperties, quantity) {Health = (float) health, IsRepackaged = repackaged};
             return new LootItem(id, itemInfo);
         }
     }

@@ -209,6 +209,12 @@ namespace Perpetuum.Services.Looting
                             item.Owner = player.Owner;
                             item.Quantity = reqQty;
                             item.IsRepackaged = lootItem.ItemInfo.IsRepackaged;
+                            
+                            foreach (var dynprop in lootItem.ItemInfo.EntityDynamicProperties.Items)
+                            {
+                                item.DynamicProperties.Set(dynprop.Key, dynprop.Value);
+                            }
+                            
 
                             if (!container.IsEnoughCapacity(item))
                                 continue;
@@ -561,13 +567,29 @@ namespace Perpetuum.Services.Looting
 
                 container.Initialize();
 
+                // loot items that are not repackaged.
                 container.AddLoots(_lootItems.Where(l => !l.ItemInfo.IsRepackaged));
 
-                var stackedLoots = _lootItems.Where(l => l.ItemInfo.IsRepackaged)
-                                        .GroupBy(l => l.ItemInfo.Definition)
-                                        .Select(grp => LootItemBuilder.Create(grp.Key).AsRepackaged().SetQuantity(grp.Sum(l => l.Quantity)).Build());
+                // loot items that are repackaged.
+                var Loots = _lootItems.Where(l => l.ItemInfo.IsRepackaged).Select(item => item);
 
-                container.AddLoots(stackedLoots);
+                List<LootItem> StackedLoots = new List<LootItem>();
+
+                foreach(var item in Loots)
+                {
+                    LootItem tmp = StackedLoots.Where(l => l.ItemInfo.Definition == item.ItemInfo.Definition).FirstOrDefault();
+                    if (tmp is null)
+                    {
+                        StackedLoots.Add(LootItemBuilder.Create(item.ItemInfo.Definition,item.ItemInfo.EntityDynamicProperties).Build());
+                    }
+                    else
+                    {
+                        tmp.Quantity++;
+                    }
+                }
+
+
+                container.AddLoots(StackedLoots);
                 zone.UnitService.AddUserUnit(container,position);
                 return container;
             }

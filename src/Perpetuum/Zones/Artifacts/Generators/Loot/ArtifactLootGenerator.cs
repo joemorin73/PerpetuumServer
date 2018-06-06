@@ -38,6 +38,15 @@ namespace Perpetuum.Zones.Artifacts.Generators.Loot
 
                     var builder = loot.GetLootItemBuilder();
                     var lootItem = builder.Build();
+
+                    // loot item is a ct. set defaults.
+                    if (lootItem.ItemInfo.EntityDefault.CategoryFlags.HasFlag(ExportedTypes.CategoryFlags.cf_calibration_programs))
+                    {
+                        lootItem.ItemInfo.EntityDynamicProperties.GetOrAdd(k.materialEfficiency, 50);
+                        lootItem.ItemInfo.EntityDynamicProperties.GetOrAdd(k.timeEfficiency, 50);
+                        lootItem.ItemInfo.EntityDynamicProperties.GetOrAdd(k.targetQuantity, 5);
+                    }
+
                     result.Add(lootItem);
                 }
 

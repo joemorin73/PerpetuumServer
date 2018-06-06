@@ -502,14 +502,19 @@ namespace Perpetuum.Players
                         }
 
                         // elkerunk minden itemet a kontenerbol es valogatunk belole 50% szerint
-                        foreach (var item in robotInventory.GetItems().Where(i => LootHelper.Roll() && !i.ED.AttributeFlags.NonStackable))
+                        foreach (var item in robotInventory.GetItems()) //.Where(i => LootHelper.Roll() ))//&& !i.ED.AttributeFlags.NonStackable))
                         {
                             var qtyMod = FastRandom.NextDouble();
                             item.Quantity = (int)(item.Quantity * qtyMod);
 
+                            if (item.ED.CategoryFlags.HasFlag(CategoryFlags.cf_calibration_programs))
+                            {
+                                item.Quantity = 1;
+                            }
+
                             if (item.Quantity > 0)
                             {
-                                lootItems.Add(LootItemBuilder.Create(item.Definition).SetQuantity(item.Quantity).SetRepackaged(item.ED.AttributeFlags.Repackable).Build());
+                                lootItems.Add(LootItemBuilder.Create(item.Definition, item.DynamicProperties).SetQuantity(item.Quantity).SetRepackaged(item.ED.AttributeFlags.Repackable).Build());
                             }
                             else
                             {

@@ -17,7 +17,8 @@ namespace Perpetuum.Services.Looting
         public static void AddWithStack(this ILootItemRepository repository, LootContainer container, LootItem lootItem)
         {
             var f = repository.GetByDefinition(container,lootItem.ItemInfo.Definition).FirstOrDefault(l => Math.Abs(l.ItemInfo.Health - lootItem.ItemInfo.Health) < double.Epsilon);
-            if (f == null)
+            // if the item has dynamic properties, do not stack it.
+            if (f == null || f.ItemInfo.EntityDynamicProperties.Items.Count > 1)
             {
                 repository.Add(container,lootItem);
                 return;

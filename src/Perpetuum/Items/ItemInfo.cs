@@ -16,12 +16,24 @@ namespace Perpetuum.Items
         //
         public float Health { get; set; }
         public bool IsRepackaged { get; set; }
+        public EntityDynamicProperties EntityDynamicProperties { get; set; }
 
         public ItemInfo(int definition,int quantity = 1) : this()
         {
             Definition = definition;
             Quantity = quantity;
             Health = (float) EntityDefault.Health;
+            IsRepackaged = EntityDefault.AttributeFlags.Repackable;
+            EntityDynamicProperties = new EntityDynamicProperties();
+        }
+
+        // an item with a quantity of one (should be a unique item) with dynamic properties that need to survive, like CTs.
+        public ItemInfo(int definition, EntityDynamicProperties DynamicProperties, int quantity = 1 ) : this()
+        {
+            Definition = definition;
+            Quantity = quantity;
+            Health = (float)EntityDefault.Health;
+            EntityDynamicProperties = (DynamicProperties is null) ? new EntityDynamicProperties() : DynamicProperties;
             IsRepackaged = EntityDefault.AttributeFlags.Repackable;
         }
 
@@ -34,6 +46,7 @@ namespace Perpetuum.Items
             Quantity = this.randomQuantity(); //randomize quantity for min-max ranged loots on init
             Health = (float)EntityDefault.Health;
             IsRepackaged = EntityDefault.AttributeFlags.Repackable;
+            EntityDynamicProperties = new EntityDynamicProperties();
         }
 
         //Roll random

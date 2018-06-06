@@ -30,9 +30,6 @@ namespace Perpetuum.Services.ProductionEngine.CalibrationPrograms
 
         public override void OnInsertToDb()
         {
-            MaterialEfficiencyPoints = 50;
-            TimeEfficiencyPoints = 50;
-
             base.OnInsertToDb();
         }
 

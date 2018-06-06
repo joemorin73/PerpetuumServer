@@ -1,5 +1,6 @@
 using System;
 using Perpetuum.Builders;
+using Perpetuum.EntityFramework;
 using Perpetuum.Items;
 
 namespace Perpetuum.Services.Looting
@@ -25,6 +26,11 @@ namespace Perpetuum.Services.Looting
             return new LootItemBuilder(new ItemInfo(definition, 1));
         }
 
+        public static LootItemBuilder Create(int definition, EntityDynamicProperties entityDynamicProperties)
+        {
+            return new LootItemBuilder(new ItemInfo(definition, entityDynamicProperties, 1));
+        }
+
         public static LootItemBuilder Create(Item item)
         {
             return Create(item.Definition).SetQuantity(item.Quantity).SetRepackaged(item.IsRepackaged).SetHealth(item.Health);
@@ -33,6 +39,12 @@ namespace Perpetuum.Services.Looting
         public LootItemBuilder SetQuantity(int quantity)
         {
             _item.Quantity = quantity;
+            return this;
+        }
+
+        public LootItemBuilder SetDynamicProperties(EntityDynamicProperties props)
+        {
+            _item.EntityDynamicProperties = props;
             return this;
         }
 
