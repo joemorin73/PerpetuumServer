@@ -269,6 +269,9 @@ namespace Perpetuum.Bootstrapper
             Logger.Info($"GC isServerGC: {GCSettings.IsServerGC}");
             Logger.Info($"GC Latency mode: {GCSettings.LatencyMode}");
             Logger.Info($"Vector is hardware accelerated: {Vector.IsHardwareAccelerated}");
+            Logger.Info($"Relay Port v1: {config.ListenerPort} ");
+            Logger.Info($"Relay Port v2: {config.ListenerPortv2} ");
+            Logger.Info($"Bound IP Address: {config.ListenerIP} ");
 
             Db.DbQueryFactory = _container.Resolve<Func<DbQuery>>();
 

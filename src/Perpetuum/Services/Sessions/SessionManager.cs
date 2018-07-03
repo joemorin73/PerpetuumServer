@@ -19,6 +19,7 @@ namespace Perpetuum.Services.Sessions
     public class SessionManager : ISessionManager
     {
         private readonly TcpListener _listener;
+        private readonly TcpListener _listenerv2;
         private readonly Session.Factory _sessionFactory;
         private readonly IRelayStateService _relayStateService;
         private readonly ISteamManager _steamManager;
@@ -28,27 +29,30 @@ namespace Perpetuum.Services.Sessions
         public SessionManager(GlobalConfiguration globalConfiguration,IHostStateService hostStateService,Session.Factory sessionFactory,IRelayStateService relayStateService,ISteamManager steamManager)
         {
             var relayEndPoint = new IPEndPoint(IPAddress.Any,globalConfiguration.ListenerPort);
+            var relayEndPointv2 = new IPEndPoint(IPAddress.Any, globalConfiguration.ListenerPortv2);
 
             _listener = new TcpListener(relayEndPoint);
+            _listenerv2 = new TcpListener(relayEndPointv2);
             _sessionFactory = sessionFactory;
             _relayStateService = relayStateService;
             _steamManager = steamManager;
             MaxSessions = 1000;
 
-            hostStateService.StateChanged += (sender,state) =>
+            hostStateService.StateChanged += (sender, state) =>
             {
                 switch (state)
                 {
                     case HostState.Online:
-                    {
-                        _listener.Start(OnConnectionAccepted);
-                        break;
-                    }
+                        {
+                            _listener.Start(OnConnectionAccepted);
+                            _listenerv2.Start(OnConnectionAccepted);
+                            break;
+                        }
                     case HostState.Off:
-                    {
-                        Stop();
-                        break;
-                    }
+                        {
+                            Stop();
+                            break;
+                        }
                 }
             };
         }
@@ -59,7 +63,7 @@ namespace Perpetuum.Services.Sessions
 
         private void OnConnectionAccepted(Socket socket)
         {
-            Logger.Info($"[Relay] client connected. {socket.RemoteEndPoint}");
+            Logger.Info($"[Relay] client connected. {socket.RemoteEndPoint} Port { ((IPEndPoint)socket.LocalEndPoint).Port }");
 
             var session = _sessionFactory(socket);
             session.Disconnected += OnSessionDisconnected;
@@ -104,6 +108,7 @@ namespace Perpetuum.Services.Sessions
         public void Stop()
         {
             _listener.Stop();
+            _listenerv2.Stop();
 
             foreach (var session in _sessions.Values)
             {

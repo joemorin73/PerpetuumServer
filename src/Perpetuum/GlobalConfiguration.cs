@@ -4,6 +4,7 @@ namespace Perpetuum
     {
         public string ListenerIP { get; set; }
         public int ListenerPort { get; set; }
+        public int ListenerPortv2 { get; set; }
 
         public string GameRoot { get; set; }
         public string WebServiceIP { get; set; }

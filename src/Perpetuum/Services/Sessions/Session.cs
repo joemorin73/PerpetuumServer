@@ -68,6 +68,7 @@ namespace Perpetuum.Services.Sessions
         private AccessLevel _accessLevel;
         private DateTime _characterSelectTime;
         private DateTime _sessionStart = DateTime.Now;
+        private Socket _socket;
 
         public delegate ISession Factory(Socket socket);
 
@@ -81,7 +82,7 @@ namespace Perpetuum.Services.Sessions
         {
             Id = SessionID.New();
 
-            _connection = new SessionConnection(socket) { RsaKeyReceived = OnRsaKeyReceived };
+            _connection = new SessionConnection(socket, globalConfiguration) { RsaKeyReceived = OnRsaKeyReceived };
             _connection.Disconnected += OnDisconnected;
             _connection.Received += OnDataReceived;
             _globalConfiguration = globalConfiguration;
@@ -90,7 +91,7 @@ namespace Perpetuum.Services.Sessions
             _commandFactory = commandFactory;
             _requestHandlerFactory = requestHandlerFactory;
             _zoneRequestHandlerFactory = zoneRequestHandlerFactory;
-
+            _socket = socket;
             _accessLevel = AccessLevel.notDefined;
         }
 
@@ -137,7 +138,9 @@ namespace Perpetuum.Services.Sessions
         public event SessionEventHandler Disconnected;
 
         public event SessionEventHandler RsaKeyReceived;
-        
+
+        public bool ProtoIsV2 => ((IPEndPoint)_socket.LocalEndPoint).Port == _globalConfiguration.ListenerPortv2;
+
         /// <summary>
         /// mitigate account creation spam. now must disconnect before trying to make another account.
         /// </summary>
@@ -408,21 +411,28 @@ namespace Perpetuum.Services.Sessions
         private class SessionConnection : EncryptedTcpConnection
         {
             private Rc4 _rc4;
+            private Socket _socket;
+            private GlobalConfiguration _globalConfiguration;
 
-            public SessionConnection(Socket socket) : base(socket)
+            public bool ProtoIsV2 => ((IPEndPoint)_socket.LocalEndPoint).Port == _globalConfiguration.ListenerPortv2;
+
+            public SessionConnection(Socket socket, GlobalConfiguration globalConfiguration) : base(socket)
             {
+                _socket = socket;
+                _globalConfiguration = globalConfiguration;
             }
 
             public Action RsaKeyReceived { private get; set; }
 
             protected override void OnReceived(byte[] data)
             {
+
                 if (_rc4 == null)
                 {
                     HandleRsaPacket(data);
                     return;
                 }
-
+                
                 var tmpBuffer = new byte[data.Length - 1];
                 Buffer.BlockCopy(data, 1, tmpBuffer, 0, data.Length - 1);
 
@@ -438,7 +448,15 @@ namespace Perpetuum.Services.Sessions
                 var rsaData = new byte[data.Length - 4];
                 Buffer.BlockCopy(data, 4, rsaData, 0, data.Length - 4);
 
-                var streamKey = Rsa.Decrypt(rsaData).ThrowIfNull(ErrorCodes.WTFErrorMedicalAttentionSuggested);
+                byte[] streamKey;
+                if (ProtoIsV2)
+                {
+                    streamKey = rsaData; // replace with our own thing.
+                }
+                else
+                {
+                    streamKey = Rsa.Decrypt(rsaData).ThrowIfNull(ErrorCodes.WTFErrorMedicalAttentionSuggested);
+                }
 
                 _rc4 = new Rc4(streamKey);
 
