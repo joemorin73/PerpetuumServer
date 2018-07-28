@@ -291,10 +291,16 @@ namespace Perpetuum.Zones
 
         private TerrainUpdateNotifier CreateTerrainNotifier(Player player)
         {
-            var layerTypes = _zone.Configuration.Terraformable ? new[] { LayerType.Altitude, LayerType.Blocks, LayerType.Control, LayerType.Plants } : 
-                                                                 new[] { LayerType.Blocks, LayerType.Plants, LayerType.Control };
-
-            return new TerrainUpdateNotifier(_zone,player,layerTypes);
+            // FIXME: right now we are only going to drastically terraform the new stronghold types from old gammas.
+            // otherwise for alphas and betas we don't send altitude updates. This could be bad if we ever changed an alpha.
+            if (_zone is StrongHoldZone || _zone is PvpStongHoldZone || _zone.Configuration.Terraformable)
+            {
+                return new TerrainUpdateNotifier(_zone, player, new[] { LayerType.Altitude, LayerType.Blocks, LayerType.Control, LayerType.Plants });
+            }
+            else
+            {
+                return new TerrainUpdateNotifier(_zone, player, new[] { LayerType.Blocks, LayerType.Control, LayerType.Plants });
+            }            
         }
 
         private void HandleClientUpdate(Packet packet)

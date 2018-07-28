@@ -2377,6 +2377,7 @@ namespace Perpetuum.Bootstrapper
             RegisterZone<PvpZone>(ZoneType.Pvp);
             RegisterZone<TrainingZone>(ZoneType.Training);
             RegisterZone<StrongHoldZone>(ZoneType.Stronghold);
+            RegisterZone<PvpStongHoldZone>(ZoneType.PvpStrongHold);
 
 
             _builder.RegisterType<SettingsLoader>();

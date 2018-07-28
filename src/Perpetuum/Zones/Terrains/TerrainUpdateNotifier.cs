@@ -177,7 +177,14 @@ namespace Perpetuum.Zones.Terrains
 
         private Area GetVisibleArea()
         {
-            return Area.FromRadius(_player.CurrentPosition, VISIBLE_RANGE);
+            if (_zone is StrongHoldZone || _zone is PvpStongHoldZone || _zone.Configuration.Terraformable)
+            {
+                return Area.FromRadius(_player.CurrentPosition, 1024);
+            }
+            else
+            {
+                return Area.FromRadius(_player.CurrentPosition, VISIBLE_RANGE);
+            }
         }
 
         public void ForceUpdateGrids()

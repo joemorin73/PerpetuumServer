@@ -6,6 +6,7 @@
         Pve,
         Pvp,
         Training,
-        Stronghold
+        Stronghold,
+        PvpStrongHold
     }
 }
