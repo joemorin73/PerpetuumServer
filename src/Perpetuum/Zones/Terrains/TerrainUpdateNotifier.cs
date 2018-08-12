@@ -129,10 +129,6 @@ namespace Perpetuum.Zones.Terrains
             var tilesPerCellX = zone.Size.Width / TILES_PER_CELL;
             var tilesPerCellY = zone.Size.Height / TILES_PER_CELL;
 
-#if DEBUG
-            Logger.Info("player needs update on fancy new zone? " + player.IsZoneOutOfDateForPlayer(zone.Id));
-#endif
-
             _grid = new Grid<UpdateHolderCell>(zone.Size.Width, zone.Size.Height, tilesPerCellX, tilesPerCellY, area =>
             {
                 var cell = new UpdateHolderCell(area);
