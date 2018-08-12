@@ -295,7 +295,9 @@ namespace Perpetuum.Zones
             // otherwise for alphas and betas we don't send altitude updates. This could be bad if we ever changed an alpha.
             if (_zone is StrongHoldZone || _zone is PvpStongHoldZone || _zone.Configuration.Terraformable)
             {
-                return new TerrainUpdateNotifier(_zone, player, new[] { LayerType.Altitude, LayerType.Blocks, LayerType.Control, LayerType.Plants });
+                var localLayerUpdates = new[] { LayerType.Altitude, LayerType.Blocks, LayerType.Control, LayerType.Plants };
+                var globalOneTimeUpdates = new[] { LayerType.Altitude, LayerType.Blocks };
+                return new TerrainUpdateNotifier(_zone, player, localLayerUpdates, globalOneTimeUpdates);
             }
             else
             {

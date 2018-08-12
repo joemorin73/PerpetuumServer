@@ -20,28 +20,65 @@ namespace Perpetuum.Zones.Terrains
         private int _dirty;
 
         private readonly Grid<UpdateHolderCell> _grid;
-        private ImmutableList<TerrainUpdateInfo>  _newUpdates = ImmutableList<TerrainUpdateInfo>.Empty;
+        private ImmutableList<TerrainUpdateInfo> _newUpdates = ImmutableList<TerrainUpdateInfo>.Empty;
 
         private class UpdateHolderCell : Cell
         {
             public HashSet<LayerType> DirtyLayers { get; private set; }
+            public HashSet<LayerType> DirtyLayersGlobalOnetimeUpdate { get; private set; }
+            
             public LinkedList<TerrainUpdateInfo> Updates { get; private set; }
 
             public UpdateHolderCell(Area boundingBox) : base(boundingBox)
             {
                 DirtyLayers = new HashSet<LayerType>();
+                DirtyLayersGlobalOnetimeUpdate = new HashSet<LayerType>();
                 Updates = new LinkedList<TerrainUpdateInfo>();
+                NeedsGlobalUpdate = false;
             }
+
+            private bool _globUpdate;
+            public bool NeedsGlobalUpdate
+            {
+                get
+                {
+                    return _globUpdate;
+                }
+                set
+                {
+                    this._globUpdate = value;
+                }
+            }
+
 
             private bool IsEmpty
             {
-                get { return DirtyLayers.Count == 0 && Updates.Count == 0; }
+                get { return DirtyLayers.Count == 0 && Updates.Count == 0 && DirtyLayersGlobalOnetimeUpdate.Count == 0; }
             }
 
             public void Update(ITerrain terrain, Player player, Area visibleArea)
             {
                 if (IsEmpty)
                     return;
+
+                //New Method for updating dirty layers once
+                //Skip visibleArea check -- update for whole island IFF there are layers set to be updated
+                //Once updated, clear
+                //TODO FinishedFirstUpdate -- set from table of clients we think have already cached these layers
+
+                if (!NeedsGlobalUpdate && !DirtyLayersGlobalOnetimeUpdate.IsNullOrEmpty())
+                {
+                    foreach (var type in DirtyLayersGlobalOnetimeUpdate)
+                    {
+                        var packet = terrain.BuildLayerUpdatePacket(type, BoundingBox);
+                        player.Session.SendPacket(packet);
+                    }
+
+                    DirtyLayersGlobalOnetimeUpdate.Clear();
+                    Updates.Clear();
+                    NeedsGlobalUpdate = true;
+                    return;
+                }
 
                 if (!visibleArea.IntersectsWith(BoundingBox))
                 {
@@ -84,6 +121,37 @@ namespace Perpetuum.Zones.Terrains
             }
         }
 
+        public TerrainUpdateNotifier(IZone zone, Player player, LayerType[] layerTypes, LayerType[] globalUpdateOnetimeLayerTypes)
+        {
+            _zone = zone;
+            _player = player;
+
+            var tilesPerCellX = zone.Size.Width / TILES_PER_CELL;
+            var tilesPerCellY = zone.Size.Height / TILES_PER_CELL;
+
+#if DEBUG
+            Logger.Info("player needs update on fancy new zone? " + player.IsZoneOutOfDateForPlayer(zone.Id));
+#endif
+
+            _grid = new Grid<UpdateHolderCell>(zone.Size.Width, zone.Size.Height, tilesPerCellX, tilesPerCellY, area =>
+            {
+                var cell = new UpdateHolderCell(area);
+                cell.NeedsGlobalUpdate = player.IsZoneOutOfDateForPlayer(zone.Id);
+
+                foreach (var type in layerTypes)
+                {
+                    cell.DirtyLayers.Add(type);
+                }
+
+                foreach (var type in globalUpdateOnetimeLayerTypes)
+                {
+                    cell.DirtyLayersGlobalOnetimeUpdate.Add(type);
+                }
+
+                return cell;
+            });
+        }
+
         public TerrainUpdateNotifier(IZone zone, Player player, LayerType[] layerTypes)
         {
             _zone = zone;
@@ -92,17 +160,17 @@ namespace Perpetuum.Zones.Terrains
             var tilesPerCellX = zone.Size.Width / TILES_PER_CELL;
             var tilesPerCellY = zone.Size.Height / TILES_PER_CELL;
 
-            _grid = new Grid<UpdateHolderCell>(zone.Size.Width,zone.Size.Height,tilesPerCellX,tilesPerCellY,area =>
-            {
-                var cell = new UpdateHolderCell(area);
-
-                foreach (var type in layerTypes)
+            _grid = new Grid<UpdateHolderCell>(zone.Size.Width, zone.Size.Height, tilesPerCellX, tilesPerCellY, area =>
                 {
-                    cell.DirtyLayers.Add(type);
-                }
+                    var cell = new UpdateHolderCell(area);
 
-                return cell;
-            });
+                    foreach (var type in layerTypes)
+                    {
+                        cell.DirtyLayers.Add(type);
+                    }
+
+                    return cell;
+                });
         }
 
         public void EnqueueNewUpdates(IEnumerable<TerrainUpdateInfo> infos)
@@ -119,12 +187,12 @@ namespace Perpetuum.Zones.Terrains
 
         public void Update()
         {
-            if ( _updatingGrid )
+            if (_updatingGrid)
                 return;
 
             DequeueNewUpdates();
 
-            if ( Interlocked.CompareExchange(ref _dirty,0,1) == 0)
+            if (Interlocked.CompareExchange(ref _dirty, 0, 1) == 0)
                 return;
 
             _updatingGrid = true;
@@ -152,7 +220,7 @@ namespace Perpetuum.Zones.Terrains
                     return ImmutableList<TerrainUpdateInfo>.Empty;
                 });
 
-                if ( infos == null )
+                if (infos == null)
                     return;
 
                 foreach (var info in infos)
@@ -177,14 +245,7 @@ namespace Perpetuum.Zones.Terrains
 
         private Area GetVisibleArea()
         {
-            if (_zone is StrongHoldZone || _zone is PvpStongHoldZone || _zone.Configuration.Terraformable)
-            {
-                return Area.FromRadius(_player.CurrentPosition, 1024);
-            }
-            else
-            {
-                return Area.FromRadius(_player.CurrentPosition, VISIBLE_RANGE);
-            }
+            return Area.FromRadius(_player.CurrentPosition, VISIBLE_RANGE);
         }
 
         public void ForceUpdateGrids()
@@ -198,7 +259,7 @@ namespace Perpetuum.Zones.Terrains
 
             foreach (var cell in _grid.GetCells())
             {
-                cell.Update(_zone.Terrain,_player, visibleArea);
+                cell.Update(_zone.Terrain, _player, visibleArea);
             }
         }
     }

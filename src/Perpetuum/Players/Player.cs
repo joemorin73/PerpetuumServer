@@ -243,6 +243,16 @@ namespace Perpetuum.Players
             p.Clear();
         }
 
+        //TODO this is placeholder for mapping accounts->zones and handling if a zone was updated from what we may suspect the client has cached
+        //Update will occur if:
+        //Zone was updated since last visit
+        //Some significant period of time has passed
+        //Some other way we suspect the client may need layer data
+        public bool IsZoneOutOfDateForPlayer(int zoneID)
+        {
+            return true;
+        }
+
         protected override void OnRemovedFromZone(IZone zone)
         {
             Session.SendPacket(ExitPacketBuilder);
