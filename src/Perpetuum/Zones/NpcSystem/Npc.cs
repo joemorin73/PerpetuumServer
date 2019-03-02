@@ -168,6 +168,21 @@ namespace Perpetuum.Zones.NpcSystem
                     return false;
             }
 
+            if (hostile.unit is Player)
+            {
+                var locks = (hostile.unit as Player).GetLocks();
+                foreach(var mylock in locks)
+                {
+                    if (mylock is UnitLock)
+                    {
+                        if ((mylock as UnitLock).Target.Eid == this.npc.Eid)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
             var isVisible = npc.IsVisible(hostile.unit);
             if (!isVisible)
                 return false;
@@ -561,7 +576,7 @@ namespace Perpetuum.Zones.NpcSystem
         private readonly ThreatManager _threatManager;
         private object _bestCombatRange;
         private TimeSpan _lastHelpCalled;
-        private List<Unit> PseudoThreats => new List<Unit>();
+        private List<Unit> PseudoThreats;
         Object PseudoLock = new Object();
 
         public Npc(TagHelper tagHelper)
@@ -569,6 +584,7 @@ namespace Perpetuum.Zones.NpcSystem
             _tagHelper = tagHelper;
             _threatManager = new ThreatManager();
             AI = new StackFSM();
+            PseudoThreats = new List<Unit>();
         }
 
         public NpcBehavior Behavior { get; set; }
@@ -623,12 +639,13 @@ namespace Perpetuum.Zones.NpcSystem
         {
             _threatManager.GetHostile(hostile).AddThreat(threat);
 
-            var PseudoThreat = PseudoThreats.Select(u => hostile).First();
+            var PseudoThreat = PseudoThreats.Where(x => x == hostile).FirstOrDefault();
             if (PseudoThreat != null)
             {
                 lock (PseudoLock)
                 {
                     PseudoThreats.Remove(PseudoThreat);
+                    Logger.DebugInfo(" Removed " + PseudoThreat.ToString());
                 }
             }
 
@@ -654,6 +671,7 @@ namespace Perpetuum.Zones.NpcSystem
             lock(PseudoLock)
             {
                 PseudoThreats.Add(hostile);
+                Logger.DebugInfo(" added  " + hostile.ToString());
             }
         }
 
@@ -766,6 +784,12 @@ namespace Perpetuum.Zones.NpcSystem
 
                 //Logger.Warning($"Ep4Npc:{ep} def:{Definition} {ED.Name}");
 
+                // if the killer isn't in the threat table, add him.
+                if (ThreatManager.Hostiles.Where(x => x.unit == killer).FirstOrDefault() is null)
+                {
+                    AddThreat(killer, new Threat(ThreatType.Undefined, 0), true);
+                }
+
                 if (zone.Configuration.IsBeta)
                     ep *= 2;
 
@@ -777,6 +801,12 @@ namespace Perpetuum.Zones.NpcSystem
                     {
                         var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile.unit);
                         hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep);
+                    }
+
+                    foreach (var hostile in PseudoThreats)
+                    {
+                        var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile);
+                        hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep / 2);
                     }
                 }
 

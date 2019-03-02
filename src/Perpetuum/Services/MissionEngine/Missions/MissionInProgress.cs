@@ -1461,6 +1461,7 @@ namespace Perpetuum.Services.MissionEngine.Missions
 
         public double GetParticipantBonusModifier()
         {
+            if (_participants is null) { return 0; }
             return computeParticipantBonusMultiplier(this._participants.Count);
         }
 
