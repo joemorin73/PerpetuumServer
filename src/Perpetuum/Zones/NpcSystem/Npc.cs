@@ -782,13 +782,7 @@ namespace Perpetuum.Zones.NpcSystem
 
                 var ep = Db.Query().CommandText("GetNpcKillEp").SetParameter("@definition", Definition).ExecuteScalar<int>();
 
-                //Logger.Warning($"Ep4Npc:{ep} def:{Definition} {ED.Name}");
-
-                // if the killer isn't in the threat table, add him.
-                if (ThreatManager.Hostiles.Where(x => x.unit == killer).FirstOrDefault() is null)
-                {
-                    AddThreat(killer, new Threat(ThreatType.Undefined, 0), true);
-                }
+                //Logger.Warning($"Ep4Npc:{ep} def:{Definition} {ED.Name}");                
 
                 if (zone.Configuration.IsBeta)
                     ep *= 2;
@@ -808,6 +802,13 @@ namespace Perpetuum.Zones.NpcSystem
                         var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile);
                         hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep / 2);
                     }
+                }
+
+                // If the killer kills the npc in one shot he doesnt get added. (Why?) Just give him EP.
+                if (ThreatManager.Hostiles.Where(x => x.unit == killer).FirstOrDefault() is null)
+                {
+                    var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(killer);
+                    hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep / 2);
                 }
 
                 scope.Complete();
