@@ -182,6 +182,7 @@ namespace Perpetuum.Zones.NpcSystem
                 if (!IsAttackable(hostile))
                 {
                     npc.ThreatManager.Remove(hostile);
+                    npc.AddPseudoThreat(hostile.unit);
                     continue;
                 }
 
@@ -367,6 +368,7 @@ namespace Perpetuum.Zones.NpcSystem
                         if (path == null)
                         {
                             npc.ThreatManager.Remove(mostHated);
+                            npc.AddPseudoThreat(mostHated.unit);
                             return;
                         }
 
@@ -559,6 +561,8 @@ namespace Perpetuum.Zones.NpcSystem
         private readonly ThreatManager _threatManager;
         private object _bestCombatRange;
         private TimeSpan _lastHelpCalled;
+        private List<Unit> PseudoThreats => new List<Unit>();
+        Object PseudoLock = new Object();
 
         public Npc(TagHelper tagHelper)
         {
@@ -619,6 +623,15 @@ namespace Perpetuum.Zones.NpcSystem
         {
             _threatManager.GetHostile(hostile).AddThreat(threat);
 
+            var PseudoThreat = PseudoThreats.Select(u => hostile).First();
+            if (PseudoThreat != null)
+            {
+                lock (PseudoLock)
+                {
+                    PseudoThreats.Remove(PseudoThreat);
+                }
+            }
+
             if (!spreadToGroup)
                 return;
 
@@ -633,6 +646,14 @@ namespace Perpetuum.Zones.NpcSystem
                 if (member == this)
                     continue;
                 member.AddThreat(hostile,t,false);
+            }
+        }
+
+        public void AddPseudoThreat(Unit hostile)
+        {
+            lock(PseudoLock)
+            {
+                PseudoThreats.Add(hostile);
             }
         }
 
