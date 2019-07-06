@@ -15,6 +15,8 @@ using Perpetuum.Log;
 using Perpetuum.Modules.Weapons;
 using Perpetuum.PathFinders;
 using Perpetuum.Players;
+using Perpetuum.Services.EventServices;
+using Perpetuum.Services.EventServices.EventProcessors;
 using Perpetuum.Services.Looting;
 using Perpetuum.Services.MissionEngine;
 using Perpetuum.Services.MissionEngine.MissionTargets;
@@ -23,6 +25,7 @@ using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones.DamageProcessors;
 using Perpetuum.Zones.Eggs;
+using Perpetuum.Zones.Intrusion;
 using Perpetuum.Zones.Locking;
 using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.Movements;
@@ -565,9 +568,11 @@ namespace Perpetuum.Zones.NpcSystem
         private readonly ThreatManager _threatManager;
         private object _bestCombatRange;
         private TimeSpan _lastHelpCalled;
+        private readonly EventListenerService _eventChannel;
 
-        public Npc(TagHelper tagHelper)
+        public Npc(TagHelper tagHelper, EventListenerService eventChannel)
         {
+            _eventChannel = eventChannel;
             _tagHelper = tagHelper;
             _threatManager = new ThreatManager();
             AI = new StackFSM();
@@ -717,6 +722,21 @@ namespace Perpetuum.Zones.NpcSystem
             Debug.Assert(zone != null, "zone != null");
            
             HandleNpcDeadAsync(zone, killer, tagger).ContinueWith((t) => base.OnDead(killer)).LogExceptions();
+
+            EventMessage msg = new EventMessageSimple("Oh Shit I died!");
+            Task.Run(() => _eventChannel.PublishMessage(msg));
+            if (SpecialType == NpcSpecialType.Boss)
+            {
+                IEnumerable<Unit> outposts = zone.Units.OfType<Outpost>();
+                var outpost = outposts.GetNearestUnit(this.CurrentPosition);
+                if (outpost is Outpost)
+                {
+                    var participants = ThreatManager.Hostiles.Select(x => zone.ToPlayerOrGetOwnerPlayer(x.unit)).ToList();
+                    EventMessage sapMessage = new StabilityAffectingEvent(outpost as Outpost, zone.ToPlayerOrGetOwnerPlayer(killer), this.Definition, this.Eid, 1, participants);
+                    _eventChannel.PublishMessage(sapMessage);
+                }
+            }
+
         }
 
         private Task HandleNpcDeadAsync(IZone zone, Unit killer, Player tagger)

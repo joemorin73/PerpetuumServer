@@ -287,7 +287,10 @@
     <Compile Include="Services\Channels\ChannelMessageHandler.cs" />
     <Compile Include="Services\Channels\GameAdminCommands.cs" />
     <Compile Include="Services\Channels\PreMadeChatMessageNames.cs" />
+    <Compile Include="Services\EventServices\EventProcessors\AffectOutpostStability.cs" />
+    <Compile Include="Services\EventServices\EventProcessors\ChatEcho.cs" />
     <Compile Include="Services\EventServices\EPBonusEventService.cs" />
+    <Compile Include="Services\EventServices\EventListenerService.cs" />
     <Compile Include="Services\Mail\PreMadeMailNames.cs" />
     <Compile Include="Services\MissionEngine\DisplayMissionSpotsProcess.cs" />
     <Compile Include="Services\MissionEngine\MissionResolveTester.cs" />
