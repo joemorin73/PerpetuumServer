@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Perpetuum.Units;
+using Perpetuum.Players;
 
 namespace Perpetuum.Services.EventServices
 {
@@ -14,9 +16,33 @@ namespace Perpetuum.Services.EventServices
     public class EventMessageSimple : EventMessage
     {
         private string _content;
+
         public EventMessageSimple(string payload)
         {
             _content = payload;
+        }
+
+        public string GetMessage()
+        {
+            return _content;
+        }
+    }
+
+
+    public class NpcMessage : EventMessage
+    {
+        private string _content;
+        private readonly Unit _source;
+
+        public NpcMessage(string payload, Unit source)
+        {
+            _content = payload;
+            _source = source;
+        }
+
+        public Player GetPlayerKiller()
+        {
+            return _source as Player;
         }
 
         public string GetMessage()
@@ -46,7 +72,7 @@ namespace Perpetuum.Services.EventServices
 
         public void NotifyListeners(EventMessage message)
         {
-            foreach(var obs in _observers)
+            foreach (var obs in _observers)
             {
                 obs.OnNext(message);
             }
@@ -60,7 +86,8 @@ namespace Perpetuum.Services.EventServices
 
         public override void Update(TimeSpan time)
         {
-            if (_queue.TryDequeue(out var message)){
+            if (_queue.TryDequeue(out var message))
+            {
                 NotifyListeners(message);
             }
         }

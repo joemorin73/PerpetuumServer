@@ -580,6 +580,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         public NpcBehavior Behavior { get; set; }
         public NpcSpecialType SpecialType { get; set; }
+        public NpcBossInfo BossInfo { get; set; }
 
         [CanBeNull]
         private INpcGroup _group;
@@ -723,17 +724,25 @@ namespace Perpetuum.Zones.NpcSystem
            
             HandleNpcDeadAsync(zone, killer, tagger).ContinueWith((t) => base.OnDead(killer)).LogExceptions();
 
-            EventMessage msg = new EventMessageSimple("Oh Shit I died!");
-            Task.Run(() => _eventChannel.PublishMessage(msg));
-            if (SpecialType == NpcSpecialType.Boss)
+            
+            if (SpecialType == NpcSpecialType.Boss && BossInfo != null)
             {
-                IEnumerable<Unit> outposts = zone.Units.OfType<Outpost>();
-                var outpost = outposts.GetNearestUnit(this.CurrentPosition);
-                if (outpost is Outpost)
+                var deathMsg = BossInfo.DeathMessage();
+                if (!deathMsg.IsNullOrEmpty())
                 {
-                    var participants = ThreatManager.Hostiles.Select(x => zone.ToPlayerOrGetOwnerPlayer(x.unit)).ToList();
-                    EventMessage sapMessage = new StabilityAffectingEvent(outpost as Outpost, zone.ToPlayerOrGetOwnerPlayer(killer), this.Definition, this.Eid, 1, participants);
-                    _eventChannel.PublishMessage(sapMessage);
+                    EventMessage msg = new NpcMessage(deathMsg, killer);
+                    Task.Run(() => _eventChannel.PublishMessage(msg));
+                }
+                if(BossInfo.OutpostEID() != null)
+                {
+                    IEnumerable<Unit> outposts = zone.Units.OfType<Outpost>();
+                    var outpost = outposts.First(o => o.Eid == BossInfo.OutpostEID());
+                    if (outpost is Outpost)
+                    {
+                        var participants = ThreatManager.Hostiles.Select(x => zone.ToPlayerOrGetOwnerPlayer(x.unit)).ToList();
+                        EventMessage sapMessage = new StabilityAffectingEvent(outpost as Outpost, zone.ToPlayerOrGetOwnerPlayer(killer), this.Definition, this.Eid, 1, participants);
+                        _eventChannel.PublishMessage(sapMessage);
+                    }
                 }
             }
 
@@ -751,7 +760,7 @@ namespace Perpetuum.Zones.NpcSystem
             using (var scope = Db.CreateTransaction())
             {
 
-                if (SpecialType == NpcSpecialType.Boss)
+                if (SpecialType == NpcSpecialType.Boss && BossInfo != null && BossInfo.LootSplit())
                 {
                     //Boss - Split loot equally to all participants
                     List<Player> participants = new List<Player>();

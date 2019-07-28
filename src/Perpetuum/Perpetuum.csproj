@@ -662,6 +662,7 @@
     <Compile Include="Zones\NpcSystem\Flocks\FlockConfigurationRepository.cs" />
     <Compile Include="Zones\NpcSystem\Flocks\IFlockConfiguration.cs" />
     <Compile Include="Zones\NpcSystem\Flocks\IFlockConfigurationRepository.cs" />
+    <Compile Include="Zones\NpcSystem\NpcBossInfo.cs" />
     <Compile Include="Zones\NpcSystem\Presences\IPresenceConfigurationReader.cs" />
     <Compile Include="Zones\NpcSystem\Presences\IPresenceManager.cs" />
     <Compile Include="Zones\NpcSystem\Presences\IRandomFlockReader.cs" />

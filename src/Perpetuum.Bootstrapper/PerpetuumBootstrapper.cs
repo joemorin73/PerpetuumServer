@@ -1658,11 +1658,13 @@ namespace Perpetuum.Bootstrapper
 
             //TODO new EventListenerService 
             _builder.RegisterType<ChatEcho>();
+            _builder.RegisterType<NpcChatEcho>();
             _builder.RegisterType<AffectOutpostStability>();
             _builder.RegisterType<EventListenerService>().SingleInstance().OnActivated(e =>
             {
                 e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(2.5)));
                 e.Instance.AttachListener(e.Context.Resolve<ChatEcho>());
+                e.Instance.AttachListener(e.Context.Resolve<NpcChatEcho>());
             });
             
 
