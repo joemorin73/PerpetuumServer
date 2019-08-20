@@ -330,109 +330,9 @@ namespace Perpetuum.Zones.Intrusion
             {
                 try
                 {
-                    var gen = new LootGenerator(_lootService.GetIntrusionLootInfos(this,sap));
+                    var gen = new LootGenerator(_lootService.GetIntrusionLootInfos(this, sap));
                     LootContainer.Create().AddLoot(gen).BuildAndAddToZone(Zone, sap.CurrentPosition);
-
-                    var winnerCorporation = sap.GetWinnerCorporation();
-                    if ( winnerCorporation == null )
-                        return;
-
-                    var siteInfo = GetIntrusionSiteInfo();
-                    var oldStability = siteInfo.Stability;
-                    var newStability = siteInfo.Stability;
-                    var newOwner = siteInfo.Owner;
-                    var oldOwner = siteInfo.Owner;
-
-                    var logEvent = new IntrusionLogEvent
-                    {
-                        OldOwner = siteInfo.Owner, 
-                        NewOwner = siteInfo.Owner,
-                        SapDefinition = sap.Definition, 
-                        EventType = IntrusionEvents.sapTakeOver, 
-                        WinnerCorporationEid = winnerCorporation.Eid, 
-                        OldStability = oldStability
-                    };
-
-                    if (winnerCorporation is PrivateCorporation)
-                    {
-                        //Compare the Owner and Winner corp's relations
-                        var ownerEid = siteInfo.Owner ?? default(long);
-                        var ownerAndWinnerGoodRelation = false;
-
-                        //Ally relationship threshold
-                        var friendlyOnly = 10;
-                        //Ally stability affect
-                        var allyAffectFactor = 0.0;
-                        //Compare mutual relation match between corps to determine ally
-                        ownerAndWinnerGoodRelation = _corporationManager.IsStandingMatch(winnerCorporation.Eid, ownerEid, friendlyOnly);
-                        ownerAndWinnerGoodRelation = _corporationManager.IsStandingMatch(ownerEid, winnerCorporation.Eid, friendlyOnly) && ownerAndWinnerGoodRelation;
-
-                        //Stability increase if winner is owner, 0 increase if ally, else negative
-                        if (winnerCorporation.Eid == siteInfo.Owner)
-                        {
-                            newStability = (newStability + sap.StabilityChange).Clamp(0, 150);
-                        }
-                        else if (ownerAndWinnerGoodRelation)
-                        {
-                            newStability = (newStability + (int)(sap.StabilityChange * allyAffectFactor)).Clamp(0, 100);
-                        }
-                        else
-                        {
-                            newStability = (newStability - sap.StabilityChange).Clamp(0, 150);
-
-                            // csak akkor ha 0 lett a stability
-                            if (newStability == 0)
-                            {
-                                if (siteInfo.Owner != null)
-                                {
-                                    // ha van owner akkor eloszor toroljuk a regit es majd a kovetkezo korben kap ujat
-                                    logEvent.EventType = IntrusionEvents.siteOwnershipLost;
-                                    newOwner = null;
-                                }
-                                else
-                                {
-                                    // itt kap uj ownert es egy kezdo stability erteket
-                                    logEvent.EventType = IntrusionEvents.siteOwnershipGain;
-                                    newOwner = winnerCorporation.Eid;
-                                    newStability = STARTING_STABILITY;
-                                }
-                            }
-                        }
-
-                        //set the resulting values
-                        SetIntrusionOwnerAndPoints(newOwner, newStability);
-                        ReactStabilityChanges(siteInfo, oldStability, newStability, newOwner, oldOwner);
-                    }
-
-                    logEvent.NewOwner = newOwner;
-                    logEvent.NewStability = newStability;
-                    InsertIntrusionLog(logEvent);
-
-                    foreach (var playerInfo in sap.GetPlayersWithScore())
-                    {
-                        var ep = playerInfo.corporationEid == winnerCorporation.Eid ? EP_WINNER : EP_LOSER;
-                        var character = playerInfo.character;
-                        character.AddExtensionPointsBoostAndLog( EpForActivityType.Intrusion, ep);
-                    }
-
-                    //make dem toast anyways
-                    Transaction.Current.OnCommited(() =>
-                    {
-                        if (oldStability != newStability)
-                        {
-                            OnIntrusionSiteInfoUpdated();
-                            InformAllPlayers();
-                        }
-
-                        InformPlayersOnZone(Commands.ZoneSapActivityEnd, new Dictionary<string, object>
-                        {
-                            {k.siteEID, Eid},
-                            {k.eventType, (int) logEvent.EventType},
-                            {k.eid, sap.Eid},
-                            {k.winner, winnerCorporation.Eid},
-                        });
-                    });
-
+                    processStabilityChange(sap.toStabilityAffectingEvent());
                     scope.Complete();
                 }
                 catch (Exception ex)
@@ -441,8 +341,6 @@ namespace Perpetuum.Zones.Intrusion
                 }
             }
         }
-
-
 
         /// //////////////////
         /// <summary>
@@ -457,99 +355,7 @@ namespace Perpetuum.Zones.Intrusion
             {
                 try
                 {
-                    var winnerCorporation = sap.GetWinnerCorporation();
-                    if (winnerCorporation == null)
-                        return;
-
-                    var siteInfo = GetIntrusionSiteInfo();
-                    var oldStability = siteInfo.Stability;
-                    var newStability = siteInfo.Stability;
-                    var newOwner = siteInfo.Owner;
-                    var oldOwner = siteInfo.Owner;
-
-                    var logEvent = new IntrusionLogEvent
-                    {
-                        OldOwner = siteInfo.Owner,
-                        NewOwner = siteInfo.Owner,
-                        SapDefinition = sap.Definition,
-                        EventType = IntrusionEvents.sapTakeOver,
-                        WinnerCorporationEid = winnerCorporation.Eid,
-                        OldStability = oldStability
-                    };
-
-                    if (winnerCorporation is PrivateCorporation)
-                    {
-                        //Compare the Owner and Winner corp's relations
-                        var ownerEid = siteInfo.Owner ?? default(long);
-                        var ownerAndWinnerGoodRelation = false;
-
-                        var friendlyOnly = 10;
-                        //Compare both relations between corps: 
-                        //True IFF both corps have strictly friendly relations with eachother
-                        ownerAndWinnerGoodRelation = _corporationManager.IsStandingMatch(winnerCorporation.Eid, ownerEid, friendlyOnly);
-                        ownerAndWinnerGoodRelation = _corporationManager.IsStandingMatch(ownerEid, winnerCorporation.Eid, friendlyOnly) && ownerAndWinnerGoodRelation;
-
-                        //Stability increase if winner is owner OR winner is in good standing with owner
-                        if (winnerCorporation.Eid == siteInfo.Owner || ownerAndWinnerGoodRelation)
-                        {
-                            newStability = (newStability + sap.StabilityChange).Clamp(0, 150);
-                        }
-                        else
-                        {
-                            newStability = (newStability - sap.StabilityChange).Clamp(0, 150);
-
-                            // csak akkor ha 0 lett a stability
-                            if (newStability == 0)
-                            {
-                                if (siteInfo.Owner != null)
-                                {
-                                    // ha van owner akkor eloszor toroljuk a regit es majd a kovetkezo korben kap ujat
-                                    logEvent.EventType = IntrusionEvents.siteOwnershipLost;
-                                    newOwner = null;
-                                }
-                                else
-                                {
-                                    // itt kap uj ownert es egy kezdo stability erteket
-                                    logEvent.EventType = IntrusionEvents.siteOwnershipGain;
-                                    newOwner = winnerCorporation.Eid;
-                                    newStability = STARTING_STABILITY;
-                                }
-                            }
-                        }
-
-                        //set the resulting values
-                        SetIntrusionOwnerAndPoints(newOwner, newStability);
-                        ReactStabilityChanges(siteInfo, oldStability, newStability, newOwner, oldOwner);
-                    }
-
-                    logEvent.NewOwner = newOwner;
-                    logEvent.NewStability = newStability;
-                    InsertIntrusionLog(logEvent);
-
-                    //Award EP
-                    foreach (var player in sap.GetPlayers())
-                    {
-                        player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Intrusion, 120);
-                    }
-
-                    //make dem toast anyways
-                    Transaction.Current.OnCommited(() =>
-                    {
-                        if (oldStability != newStability)
-                        {
-                            OnIntrusionSiteInfoUpdated();
-                            InformAllPlayers();
-                        }
-
-                        InformPlayersOnZone(Commands.ZoneSapActivityEnd, new Dictionary<string, object>
-                        {
-                            {k.siteEID, Eid},
-                            {k.eventType, (int) logEvent.EventType},
-                            {k.eid, sap.Eid},
-                            {k.winner, winnerCorporation.Eid},
-                        });
-                    });
-
+                    processStabilityChange(sap);
                     scope.Complete();
                 }
                 catch (Exception ex)
@@ -560,6 +366,111 @@ namespace Perpetuum.Zones.Intrusion
         }
         //
 
+        /// //////////////////
+        /// <summary>
+        /// Core SAP logic
+        /// </summary>
+        private void processStabilityChange(StabilityAffectingEvent sap)
+        {
+            var winnerCorporation = sap.GetWinnerCorporation();
+            if (winnerCorporation == null)
+                return;
+
+            var siteInfo = GetIntrusionSiteInfo();
+            var oldStability = siteInfo.Stability;
+            var newStability = siteInfo.Stability;
+            var newOwner = siteInfo.Owner;
+            var oldOwner = siteInfo.Owner;
+
+            var logEvent = new IntrusionLogEvent
+            {
+                OldOwner = siteInfo.Owner,
+                NewOwner = siteInfo.Owner,
+                SapDefinition = sap.Definition,
+                EventType = IntrusionEvents.sapTakeOver,
+                WinnerCorporationEid = winnerCorporation.Eid,
+                OldStability = oldStability
+            };
+
+            if (winnerCorporation is PrivateCorporation)
+            {
+                //Compare the Owner and Winner corp's relations
+                var ownerEid = siteInfo.Owner ?? default(long);
+                var ownerAndWinnerGoodRelation = false;
+
+                //Ally relationship threshold
+                var friendlyOnly = 10;
+                //Ally stability affect
+                var allyAffectFactor = 0.0;
+                //Compare mutual relation match between corps to determine ally
+                ownerAndWinnerGoodRelation = _corporationManager.IsStandingMatch(winnerCorporation.Eid, ownerEid, friendlyOnly);
+                ownerAndWinnerGoodRelation = _corporationManager.IsStandingMatch(ownerEid, winnerCorporation.Eid, friendlyOnly) && ownerAndWinnerGoodRelation;
+
+                //Stability increase if winner is owner, 0 increase if ally, else negative
+                if (winnerCorporation.Eid == siteInfo.Owner)
+                {
+                    newStability = (newStability + sap.StabilityChange).Clamp(0, 150);
+                }
+                else if (ownerAndWinnerGoodRelation)
+                {
+                    newStability = (newStability + (int)(sap.StabilityChange * allyAffectFactor)).Clamp(0, 100);
+                }
+                else
+                {
+                    newStability = (newStability - sap.StabilityChange).Clamp(0, 150);
+
+                    // csak akkor ha 0 lett a stability
+                    if (newStability == 0)
+                    {
+                        if (siteInfo.Owner != null)
+                        {
+                            // ha van owner akkor eloszor toroljuk a regit es majd a kovetkezo korben kap ujat
+                            logEvent.EventType = IntrusionEvents.siteOwnershipLost;
+                            newOwner = null;
+                        }
+                        else
+                        {
+                            // itt kap uj ownert es egy kezdo stability erteket
+                            logEvent.EventType = IntrusionEvents.siteOwnershipGain;
+                            newOwner = winnerCorporation.Eid;
+                            newStability = STARTING_STABILITY;
+                        }
+                    }
+                }
+
+                //set the resulting values
+                SetIntrusionOwnerAndPoints(newOwner, newStability);
+                ReactStabilityChanges(siteInfo, oldStability, newStability, newOwner, oldOwner);
+            }
+
+            logEvent.NewOwner = newOwner;
+            logEvent.NewStability = newStability;
+            InsertIntrusionLog(logEvent);
+
+            //Award EP
+            foreach (var player in sap.GetPlayers())
+            {
+                player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Intrusion, 120);
+            }
+
+            //make dem toast anyways
+            Transaction.Current.OnCommited(() =>
+            {
+                if (oldStability != newStability)
+                {
+                    OnIntrusionSiteInfoUpdated();
+                    InformAllPlayers();
+                }
+
+                InformPlayersOnZone(Commands.ZoneSapActivityEnd, new Dictionary<string, object>
+                        {
+                            {k.siteEID, Eid},
+                            {k.eventType, (int) logEvent.EventType},
+                            {k.eid, sap.Eid},
+                            {k.winner, winnerCorporation.Eid},
+                        });
+            });
+        }
 
 
         private void OnSAPTimeOut(SAP sap)
