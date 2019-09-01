@@ -26,8 +26,9 @@ namespace Perpetuum.Zones.Intrusion
     public class Outpost : DockingBase
     {
         private const int EP_WINNER = 120;
-        private const int EP_LOSER = 20;
         private const int MAX_STABILITY = 120;
+        private const int MIN_STABILITY = 0;
+        private const int STARTING_STABILITY = 1;
         private const int PRODUCTION_BONUS_THRESHOLD = 100;
 
         private TimeRange _intrusionWaitTime => IntrusionWaitTime;
@@ -319,8 +320,6 @@ namespace Perpetuum.Zones.Intrusion
             Task.Run(() => HandleTakeOver(sap)).ContinueWith(t => IntrusionInProgress = false);
         }
 
-        private const int STARTING_STABILITY = 1;
-
         /// <summary>
         /// This function is called when players take over a sap successfully
         /// </summary>
@@ -411,18 +410,18 @@ namespace Perpetuum.Zones.Intrusion
                 //Stability increase if winner is owner, 0 increase if ally, else negative
                 if (winnerCorporation.Eid == siteInfo.Owner)
                 {
-                    newStability = (newStability + sap.StabilityChange).Clamp(0, MAX_STABILITY);
+                    newStability = (newStability + sap.StabilityChange);
                 }
                 else if (ownerAndWinnerGoodRelation)
                 {
-                    newStability = (newStability + (int)(sap.StabilityChange * allyAffectFactor)).Clamp(0, MAX_STABILITY);
+                    newStability = (newStability + (int)(sap.StabilityChange * allyAffectFactor));
                 }
                 else
                 {
-                    newStability = (newStability - sap.StabilityChange).Clamp(0, MAX_STABILITY);
+                    newStability = (newStability - sap.StabilityChange);
 
                     // csak akkor ha 0 lett a stability
-                    if (newStability == 0)
+                    if (newStability <= 0)
                     {
                         if (siteInfo.Owner != null)
                         {
@@ -439,6 +438,7 @@ namespace Perpetuum.Zones.Intrusion
                         }
                     }
                 }
+                newStability = newStability.Clamp(MIN_STABILITY, MAX_STABILITY);
 
                 //set the resulting values
                 SetIntrusionOwnerAndPoints(newOwner, newStability);
@@ -452,7 +452,7 @@ namespace Perpetuum.Zones.Intrusion
             //Award EP
             foreach (var player in sap.GetPlayers())
             {
-                player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Intrusion, 120);
+                player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Intrusion, EP_WINNER);
             }
 
             //make dem toast anyways
