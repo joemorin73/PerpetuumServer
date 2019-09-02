@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace Perpetuum.Zones.NpcSystem
 {
+    /// <summary>
+    /// Specifies the behavior of a Boss-type NPC with various settings
+    /// </summary>
     public class NpcBossInfo
     {
         public static NpcBossInfo CreateBossInfoFromDB(IDataRecord record)
@@ -65,11 +68,23 @@ namespace Perpetuum.Zones.NpcSystem
         }
 
         // TODO - find good place to call this that will be stable and not noisey (excessive repeat messages)
+        /// <summary>
+        /// Handle any actions that this NPC Boss should do upon Aggression, including sending a message
+        /// </summary>
+        /// <param name="aggressor">Player aggressor</param>
+        /// <param name="channel">the npc event channel</param>
         public void OnAggro(Unit aggressor, EventListenerService channel)
         {
             CommunicateAggression(aggressor, channel);
         }
 
+        /// <summary>
+        /// Handle any death behavior for this Boss NPC
+        /// Includes sending a message, and affecting outpost's stability if set
+        /// </summary>
+        /// <param name="npc">The npc Boss killed</param>
+        /// <param name="killer">Player killer</param>
+        /// <param name="channel">npc-event listener channel</param>
         public void OnDeath(Npc npc, Unit killer, EventListenerService channel)
         {
             CommunicateDeath(killer, channel);
@@ -93,12 +108,21 @@ namespace Perpetuum.Zones.NpcSystem
             }
         }
 
+        /// <summary>
+        /// Apply any respawn timer modifiers
+        /// </summary>
+        /// <param name="respawnTime">normal respawn time of npc</param>
+        /// <returns>modified respawn time of npc</returns>
         public TimeSpan OnRespawn(TimeSpan respawnTime)
         {
             var factor = _respawnNoiseFactor ?? 0.0;
             return respawnTime.Multiply(FastRandom.NextDouble(1.0 - factor, 1.0 + factor));
         }
 
+        /// <summary>
+        /// True if this NPC Boss should use auto-loot splitting
+        /// </summary>
+        /// <returns>true - if loot needs splitting</returns>
         public bool IsLootSplit()
         {
             return _lootSplit;
