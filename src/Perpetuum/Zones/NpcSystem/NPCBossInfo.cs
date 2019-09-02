@@ -66,7 +66,10 @@ namespace Perpetuum.Zones.NpcSystem
 
         public void OnAggro(Unit aggressor, EventListenerService channel)
         {
-            CommunicateAggression(aggressor, channel);
+            if (aggressor != null)
+            {
+                CommunicateAggression(aggressor, channel);
+            }
         }
 
         public void OnDeath(Npc npc, Unit killer, EventListenerService channel)

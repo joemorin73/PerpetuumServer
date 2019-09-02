@@ -57,10 +57,12 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
         private void RemoveMember(Npc npc)
         {
             ImmutableInterlocked.Update(ref _members, m => m.Remove(npc));
+            npc.OnRemove();
+            npc.Dead -= OnMemberDead;
         }
 
 
-        protected virtual void OnMemberDead(Unit killer,Unit npc)
+        protected virtual void OnMemberDead(Unit killer, Unit npc)
         {
             RemoveMember((Npc) npc);
 

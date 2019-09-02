@@ -578,9 +578,50 @@ namespace Perpetuum.Zones.NpcSystem
             AI = new StackFSM();
         }
 
+        public void OnRemove()
+        {
+            if (_subscribedBossStateChange)
+            {
+                AI.StateChanged -= OnAIStateChangeBoss;
+            }
+        }
+
         public NpcBehavior Behavior { get; set; }
         public NpcSpecialType SpecialType { get; set; }
-        public NpcBossInfo BossInfo { get; set; }
+        private NpcBossInfo _bossInfo;
+        private bool _subscribedBossStateChange = false;
+        public NpcBossInfo BossInfo
+        {
+            get
+            {
+                return _bossInfo;
+            }
+            set
+            {
+                if (!_subscribedBossStateChange)
+                {
+                    AI.StateChanged += OnAIStateChangeBoss;
+                    _subscribedBossStateChange = true;
+                }
+                if (value == null)
+                {
+                    if (_subscribedBossStateChange)
+                    {
+                        AI.StateChanged -= OnAIStateChangeBoss;
+                    }
+                }
+                _bossInfo = value;
+            }
+        }
+
+        private void OnAIStateChangeBoss(IState state)
+        {
+            if (state is AggressorAI)
+            {
+                Player player = GetTagger();
+                BossInfo.OnAggro(GetTagger(), _eventChannel);
+            }
+        }
 
         public bool IsBoss()
         {
@@ -636,10 +677,10 @@ namespace Perpetuum.Zones.NpcSystem
         public void AddThreat(Unit hostile, Threat threat,bool spreadToGroup)
         {
             // Send a message if player is aggressing for the first time
-            if (IsBoss() && !_threatManager.Contains(hostile))
-            {
-                BossInfo.OnAggro(hostile, _eventChannel);
-            }
+            //if (IsBoss() && !_threatManager.Contains(hostile))
+            //{
+            //    BossInfo.OnAggro(hostile, _eventChannel);
+            //}
             _threatManager.GetHostile(hostile).AddThreat(threat);
 
             if (!spreadToGroup)
