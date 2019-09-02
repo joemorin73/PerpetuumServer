@@ -420,22 +420,19 @@ namespace Perpetuum.Zones.Intrusion
                 {
                     newStability = (newStability - sap.StabilityChange);
                 }
-                // Ownership change logic
-                if (newStability <= 0)
+                
+                if (siteInfo.Owner == null)
                 {
-                    if (siteInfo.Owner != null)
-                    {
-                        // Stability taken to 0 while owned results in loss of ownership
-                        logEvent.EventType = IntrusionEvents.siteOwnershipLost;
-                        newOwner = null;
-                    }
-                    else
-                    {
-                        // The outpost is not owned, ownership goes to the winner
-                        logEvent.EventType = IntrusionEvents.siteOwnershipGain;
-                        newOwner = winnerCorporation.Eid;
-                        newStability = STARTING_STABILITY;
-                    }
+                    // No owner - winner gets outpost, for any SAP event
+                    logEvent.EventType = IntrusionEvents.siteOwnershipGain;
+                    newOwner = winnerCorporation.Eid;
+                    newStability = STARTING_STABILITY;
+                }
+                else if (newStability <= 0)
+                {
+                    // Outpost has owner, but new stability hit 0 = owner loses station
+                    logEvent.EventType = IntrusionEvents.siteOwnershipLost;
+                    newOwner = null;
                 }
 
                 newStability = newStability.Clamp(MIN_STABILITY, MAX_STABILITY);
