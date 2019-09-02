@@ -408,7 +408,7 @@ namespace Perpetuum.Zones.Intrusion
                 ownerAndWinnerGoodRelation = _corporationManager.IsStandingMatch(ownerEid, winnerCorporation.Eid, friendlyOnly) && ownerAndWinnerGoodRelation;
 
                 //Stability increase if winner is owner, 0 increase if ally, else negative
-                if (winnerCorporation.Eid == siteInfo.Owner)
+                if (winnerCorporation.Eid == siteInfo.Owner || sap.OverrideRelations)
                 {
                     newStability = (newStability + sap.StabilityChange);
                 }
@@ -419,25 +419,25 @@ namespace Perpetuum.Zones.Intrusion
                 else
                 {
                     newStability = (newStability - sap.StabilityChange);
-
-                    // csak akkor ha 0 lett a stability
-                    if (newStability <= 0)
+                }
+                // Ownership change logic
+                if (newStability <= 0)
+                {
+                    if (siteInfo.Owner != null)
                     {
-                        if (siteInfo.Owner != null)
-                        {
-                            // ha van owner akkor eloszor toroljuk a regit es majd a kovetkezo korben kap ujat
-                            logEvent.EventType = IntrusionEvents.siteOwnershipLost;
-                            newOwner = null;
-                        }
-                        else
-                        {
-                            // itt kap uj ownert es egy kezdo stability erteket
-                            logEvent.EventType = IntrusionEvents.siteOwnershipGain;
-                            newOwner = winnerCorporation.Eid;
-                            newStability = STARTING_STABILITY;
-                        }
+                        // Stability taken to 0 while owned results in loss of ownership
+                        logEvent.EventType = IntrusionEvents.siteOwnershipLost;
+                        newOwner = null;
+                    }
+                    else
+                    {
+                        // The outpost is not owned, ownership goes to the winner
+                        logEvent.EventType = IntrusionEvents.siteOwnershipGain;
+                        newOwner = winnerCorporation.Eid;
+                        newStability = STARTING_STABILITY;
                     }
                 }
+
                 newStability = newStability.Clamp(MIN_STABILITY, MAX_STABILITY);
 
                 //set the resulting values

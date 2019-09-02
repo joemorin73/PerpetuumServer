@@ -582,6 +582,11 @@ namespace Perpetuum.Zones.NpcSystem
         public NpcSpecialType SpecialType { get; set; }
         public NpcBossInfo BossInfo { get; set; }
 
+        public bool IsBoss()
+        {
+            return SpecialType == NpcSpecialType.Boss && BossInfo != null;
+        }
+
         [CanBeNull]
         private INpcGroup _group;
 
@@ -630,6 +635,11 @@ namespace Perpetuum.Zones.NpcSystem
 
         public void AddThreat(Unit hostile, Threat threat,bool spreadToGroup)
         {
+            // Send a message if player is aggressing for the first time
+            if (IsBoss() && !_threatManager.Contains(hostile))
+            {
+                BossInfo.OnAggro(hostile, _eventChannel);
+            }
             _threatManager.GetHostile(hostile).AddThreat(threat);
 
             if (!spreadToGroup)
@@ -724,28 +734,10 @@ namespace Perpetuum.Zones.NpcSystem
            
             HandleNpcDeadAsync(zone, killer, tagger).ContinueWith((t) => base.OnDead(killer)).LogExceptions();
 
-            
-            if (SpecialType == NpcSpecialType.Boss && BossInfo != null)
+            if (IsBoss())
             {
-                var deathMsg = BossInfo.DeathMessage();
-                if (!deathMsg.IsNullOrEmpty())
-                {
-                    EventMessage msg = new NpcMessage(deathMsg, killer);
-                    Task.Run(() => _eventChannel.PublishMessage(msg));
-                }
-                if(BossInfo.OutpostEID() != null)
-                {
-                    IEnumerable<Unit> outposts = zone.Units.OfType<Outpost>();
-                    var outpost = outposts.First(o => o.Eid == BossInfo.OutpostEID());
-                    if (outpost is Outpost)
-                    {
-                        var participants = ThreatManager.Hostiles.Select(x => zone.ToPlayerOrGetOwnerPlayer(x.unit)).ToList();
-                        EventMessage sapMessage = new StabilityAffectingEvent(outpost as Outpost, zone.ToPlayerOrGetOwnerPlayer(killer), this.Definition, this.Eid, 1, participants);
-                        _eventChannel.PublishMessage(sapMessage);
-                    }
-                }
+                BossInfo.OnDeath(this, killer, _eventChannel);
             }
-
         }
 
         private Task HandleNpcDeadAsync(IZone zone, Unit killer, Player tagger)
@@ -760,7 +752,7 @@ namespace Perpetuum.Zones.NpcSystem
             using (var scope = Db.CreateTransaction())
             {
 
-                if (SpecialType == NpcSpecialType.Boss && BossInfo != null && BossInfo.LootSplit())
+                if (IsBoss() && BossInfo.IsLootSplit())
                 {
                     //Boss - Split loot equally to all participants
                     List<Player> participants = new List<Player>();

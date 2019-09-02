@@ -73,8 +73,7 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
         {
             if (IsBoss)
             {
-                var factor = BossInfo.RespawnNoise() ?? 0.0;
-                return RespawnTime.Multiply(FastRandom.NextDouble(1.0 - factor, 1.0 + factor));
+                return BossInfo.OnRespawn(RespawnTime);
             }
             return RespawnTime;
         }

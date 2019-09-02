@@ -74,7 +74,7 @@ namespace Perpetuum.Services.EventServices
                 using (var chatPacket = new Packet(ZoneCommand.LocalChat))
                 {
                     chatPacket.AppendInt(_announcer.Id);
-                    chatPacket.AppendUtf8String(message.GetMessage());
+                    chatPacket.AppendUtf8String(message.GetMessage()+"\r\n");
                     src.SendPacketToWitnessPlayers(chatPacket, true);
                 }
             }

@@ -15,10 +15,11 @@ namespace Perpetuum.Services.EventServices.EventProcessors
         private IList<Player> _particpants;
         public Outpost Outpost { get; }
 
+        public bool OverrideRelations { get; }
         public int StabilityChange { get; }
         public int Definition { get; }
         public long Eid { get; }
-        public StabilityAffectingEvent(Outpost outpost, Player winner, int def, long eid, int sapPoints, IList<Player> participants)
+        public StabilityAffectingEvent(Outpost outpost, Player winner, int def, long eid, int sapPoints, IList<Player> participants, bool overrideRelations=false)
         {
             Outpost = outpost;
             _player = winner;
@@ -26,6 +27,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             Definition = def;
             Eid = eid;
             _particpants = participants;
+            OverrideRelations = overrideRelations;
         }
 
         public IList<Player> GetPlayers()
