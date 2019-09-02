@@ -64,6 +64,7 @@ namespace Perpetuum.Zones.NpcSystem
             _aggroMsg = customAggroMsg;
         }
 
+        // TODO - find good place to call this that will be stable and not noisey (excessive repeat messages)
         public void OnAggro(Unit aggressor, EventListenerService channel)
         {
             CommunicateAggression(aggressor, channel);

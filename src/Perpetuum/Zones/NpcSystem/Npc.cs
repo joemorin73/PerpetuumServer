@@ -635,11 +635,6 @@ namespace Perpetuum.Zones.NpcSystem
 
         public void AddThreat(Unit hostile, Threat threat,bool spreadToGroup)
         {
-            // Send a message if player is aggressing for the first time
-            if (IsBoss() && !_threatManager.Contains(hostile))
-            {
-                BossInfo.OnAggro(hostile, _eventChannel);
-            }
             _threatManager.GetHostile(hostile).AddThreat(threat);
 
             if (!spreadToGroup)
