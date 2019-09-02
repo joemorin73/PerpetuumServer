@@ -2,69 +2,30 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Perpetuum.Units;
-using Perpetuum.Players;
+using Perpetuum.Services.EventServices.EventMessages;
+using Perpetuum.Services.EventServices.EventProcessors;
 
 namespace Perpetuum.Services.EventServices
 {
-    public interface EventMessage
-    {
 
-    }
-
-
-    public class EventMessageSimple : EventMessage
-    {
-        private string _content;
-
-        public EventMessageSimple(string payload)
-        {
-            _content = payload;
-        }
-
-        public string GetMessage()
-        {
-            return _content;
-        }
-    }
-
-
-    public class NpcMessage : EventMessage
-    {
-        private string _content;
-        private readonly Unit _source;
-
-        public NpcMessage(string payload, Unit source)
-        {
-            _content = payload;
-            _source = source;
-        }
-
-        public Player GetPlayerKiller()
-        {
-            return _source as Player;
-        }
-
-        public string GetMessage()
-        {
-            return _content;
-        }
-    }
-
-
-    //Simple process that has exposed methods for sending message to its internal queue
-    //the queue is processed on the Process thread, and notifies observers accordingly - separating threads of execution for the emitter and the action taker
+    /// <summary>
+    /// Listener Process that processes queue of EventMessages and notifies observers
+    /// </summary>
     public class EventListenerService : Process
     {
-        private IList<IObserver<EventMessage>> _observers;
+        private IList<EventProcessor<EventMessage>> _observers;
         private ConcurrentQueue<EventMessage> _queue;
 
         public EventListenerService()
         {
-            _observers = new List<IObserver<EventMessage>>();
+            _observers = new List<EventProcessor<EventMessage>>();
             _queue = new ConcurrentQueue<EventMessage>();
         }
 
+        /// <summary>
+        /// Send a message where the type of EventMessage determines which listener is notified
+        /// </summary>
+        /// <param name="message">EventMessage of the type</param>
         public void PublishMessage(EventMessage message)
         {
             _queue.Enqueue(message);
@@ -78,7 +39,11 @@ namespace Perpetuum.Services.EventServices
             }
         }
 
-        public void AttachListener(IObserver<EventMessage> observer)
+        /// <summary>
+        /// Listeners are subscribed and instantiated in the Bootstrapper
+        /// </summary>
+        /// <param name="observer">Listener</param>
+        public void AttachListener(EventProcessor<EventMessage> observer)
         {
             _observers.Add(observer);
         }

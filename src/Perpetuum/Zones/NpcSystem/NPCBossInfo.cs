@@ -1,6 +1,6 @@
 ﻿using Perpetuum.Data;
 using Perpetuum.Services.EventServices;
-using Perpetuum.Services.EventServices.EventProcessors;
+using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Units;
 using Perpetuum.Zones.Intrusion;
 using System;

@@ -1,14 +1,14 @@
 ﻿using Perpetuum.Accounting.Characters;
-using Perpetuum.Players;
-using Perpetuum.Players.ExtensionMethods;
 using Perpetuum.Services.Channels;
+using Perpetuum.Services.EventServices.EventMessages;
+using Perpetuum.Services.EventServices.EventProcessors;
 using Perpetuum.Units;
 using Perpetuum.Zones;
 using System;
 
 namespace Perpetuum.Services.EventServices
 {
-    public class ChatEcho : IObserver<EventMessage>
+    public class ChatEcho : EventProcessor<EventMessage>
     {
         private readonly IChannelManager _channelManager;
         private const string SENDER_CHARACTER_NICKNAME = "[OPP] Announcer";
@@ -20,29 +20,19 @@ namespace Perpetuum.Services.EventServices
             _channelManager = channelManager;
         }
 
-        public void OnCompleted()
+        public override void OnNext(EventMessage value)
         {
-            //todo?
-        }
-
-        public void OnError(Exception error)
-        {
-            //todo?
-        }
-
-        public void OnNext(EventMessage value)
-        {
-            if (value is EventMessageSimple)
+            if (value is EventMessageSimple msg)
             {
-                var message = value as EventMessageSimple;
-                _channelManager.Announcement("General chat", _announcer, message.GetMessage());
+                _channelManager.Announcement("General chat", _announcer, msg.GetMessage());
             }
 
         }
+
     }
 
 
-    public class NpcChatEcho : IObserver<EventMessage>
+    public class NpcChatEcho : EventProcessor<EventMessage>
     {
         private readonly IChannelManager _channelManager;
         private const string SENDER_CHARACTER_NICKNAME = "[OPP] Announcer"; //TODO "Nian" character
@@ -54,27 +44,16 @@ namespace Perpetuum.Services.EventServices
             _channelManager = channelManager;
         }
 
-        public void OnCompleted()
-        {
-            //todo?
-        }
 
-        public void OnError(Exception error)
+        public override void OnNext(EventMessage value)
         {
-            //todo?
-        }
-
-        public void OnNext(EventMessage value)
-        {
-            if (value is NpcMessage)
+            if (value is NpcMessage msg)
             {
-                var message = value as NpcMessage;
-                var src = message.GetPlayerKiller();
-
+                var src = msg.GetPlayerKiller();
                 using (var chatPacket = new Packet(ZoneCommand.LocalChat))
                 {
                     chatPacket.AppendInt(_announcer.Id);
-                    chatPacket.AppendUtf8String(message.GetMessage()+"\r\n");
+                    chatPacket.AppendUtf8String(msg.GetMessage() + "\r\n");
                     src.SendPacketToWitnessPlayers(chatPacket, true);
                 }
             }

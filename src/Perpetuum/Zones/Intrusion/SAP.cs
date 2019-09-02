@@ -9,7 +9,7 @@ using Perpetuum.ExportedTypes;
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Log;
 using Perpetuum.Players;
-using Perpetuum.Services.EventServices.EventProcessors;
+using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones.Beams;

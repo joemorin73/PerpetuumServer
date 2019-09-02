@@ -15,7 +15,7 @@ using Perpetuum.Groups.Corporations;
 using Perpetuum.Items.Templates;
 using Perpetuum.Log;
 using Perpetuum.Services.Channels;
-using Perpetuum.Services.EventServices.EventProcessors;
+using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Services.Looting;
 using Perpetuum.Timers;
 using Perpetuum.Units.DockingBases;
