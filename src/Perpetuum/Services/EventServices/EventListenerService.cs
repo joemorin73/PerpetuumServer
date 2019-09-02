@@ -7,7 +7,6 @@ using Perpetuum.Services.EventServices.EventProcessors;
 
 namespace Perpetuum.Services.EventServices
 {
-
     /// <summary>
     /// Listener Process that processes queue of EventMessages and notifies observers
     /// </summary>
@@ -66,6 +65,5 @@ namespace Perpetuum.Services.EventServices
         {
             base.Start();
         }
-
     }
 }

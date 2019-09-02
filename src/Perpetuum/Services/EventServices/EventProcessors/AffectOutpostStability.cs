@@ -3,6 +3,9 @@ using Perpetuum.Zones.Intrusion;
 
 namespace Perpetuum.Services.EventServices.EventProcessors
 {
+    /// <summary>
+    /// Processes StabilityAffectingEvent messages for the provided Outpost
+    /// </summary>
     public class AffectOutpostStability : EventProcessor<EventMessage>
     {
         private Outpost _outpost;

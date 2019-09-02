@@ -4,10 +4,12 @@ using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Services.EventServices.EventProcessors;
 using Perpetuum.Units;
 using Perpetuum.Zones;
-using System;
 
 namespace Perpetuum.Services.EventServices
 {
+    /// <summary>
+    /// Simple EventProcessor example for demonstrating the EventListener system
+    /// </summary>
     public class ChatEcho : EventProcessor<EventMessage>
     {
         private readonly IChannelManager _channelManager;
@@ -31,7 +33,10 @@ namespace Perpetuum.Services.EventServices
 
     }
 
-
+    /// <summary>
+    /// NPC vicinity Chat Echo event handler
+    /// Emits a message from an NPC on the Vicinity chat channel
+    /// </summary>
     public class NpcChatEcho : EventProcessor<EventMessage>
     {
         private readonly IChannelManager _channelManager;
@@ -43,7 +48,6 @@ namespace Perpetuum.Services.EventServices
             _announcer = Character.GetByNick(SENDER_CHARACTER_NICKNAME);
             _channelManager = channelManager;
         }
-
 
         public override void OnNext(EventMessage value)
         {

@@ -323,6 +323,10 @@ namespace Perpetuum.Zones.Intrusion
             return result;
         }
 
+        /// <summary>
+        /// Adapter method for SAP->StabilityAffectingEvent
+        /// </summary>
+        /// <returns>StabilityAffectingEvent</returns>
         public StabilityAffectingEvent toStabilityAffectingEvent()
         {
             List<Player> players = new List<Player>();

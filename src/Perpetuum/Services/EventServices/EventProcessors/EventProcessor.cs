@@ -2,6 +2,10 @@
 
 namespace Perpetuum.Services.EventServices.EventProcessors
 {
+    /// <summary>
+    /// Base class for all EventProcessors
+    /// </summary>
+    /// <typeparam name="EventMessage"></typeparam>
     public abstract class EventProcessor<EventMessage> : IObserver<EventMessage>
     {
         public abstract void OnNext(EventMessage value);
