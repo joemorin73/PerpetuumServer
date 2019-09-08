@@ -1,7 +1,7 @@
-﻿using Perpetuum.Threading.Process;
-using System;
+﻿using System;
 using Perpetuum.Services.EventServices;
 using Perpetuum.Services.EventServices.EventMessages;
+using Perpetuum.EntityFramework;
 
 namespace Perpetuum.Zones.Intrusion
 {
@@ -10,12 +10,12 @@ namespace Perpetuum.Zones.Intrusion
     {
         private readonly Outpost _outpost;
         private readonly EventListenerService _eventChannel;
-        private readonly static TimeSpan noDecayBefore = TimeSpan.FromMinutes(3);
-        private readonly static TimeSpan decayRate = TimeSpan.FromMinutes(1);
+        private readonly static TimeSpan noDecayBefore = TimeSpan.FromDays(3);
+        private readonly static TimeSpan decayRate = TimeSpan.FromDays(1);
         private TimeSpan timeSinceLastDecay = TimeSpan.Zero;
         private TimeSpan lastSuccessfulIntrusion = TimeSpan.Zero;
         private readonly static int decayPts = -1;
-        private readonly int definition = 6724;
+        private readonly EntityDefault def = EntityDefault.GetByName("def_outpost_decay"); //TODO DB PR
 
         public OutpostDecay(EventListenerService eventChannel, Outpost outpost)
         {
@@ -45,7 +45,7 @@ namespace Perpetuum.Zones.Intrusion
 
         private void DoDecay()
         {
-            _eventChannel.PublishMessage(new StabilityAffectingEvent(_outpost, null, definition, null, decayPts));
+            _eventChannel.PublishMessage(new StabilityAffectingEvent(_outpost, null, def.Definition, null, decayPts));
         }
     }
 }
