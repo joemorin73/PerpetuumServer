@@ -603,12 +603,9 @@ namespace Perpetuum.Zones.NpcSystem
         private readonly ThreatManager _threatManager;
         private object _bestCombatRange;
         private TimeSpan _lastHelpCalled;
-<<<<<<< HEAD
         private readonly EventListenerService _eventChannel;
-=======
         private List<PsuedoThreat> PseudoThreats;
-        Object PseudoLock = new Object();
->>>>>>> Development
+        private object PseudoLock = new Object();
 
         public Npc(TagHelper tagHelper, EventListenerService eventChannel)
         {
@@ -820,11 +817,14 @@ namespace Perpetuum.Zones.NpcSystem
                     //Boss - Split loot equally to all participants
                     List<Player> participants = new List<Player>();
                     participants = ThreatManager.Hostiles.Select(x => zone.ToPlayerOrGetOwnerPlayer(x.unit)).ToList();
-                    ISplittableLootGenerator splitLooter = new SplittableLootGenerator(LootGenerator);
-                    List<ILootGenerator> lootGenerators = splitLooter.GetGenerators(participants.Count);
-                    for (var i = 0; i < participants.Count; i++)
+                    if (participants.Count > 0)
                     {
-                        LootContainer.Create().SetOwner(participants[i]).AddLoot(lootGenerators[i]).BuildAndAddToZone(zone, participants[i].CurrentPosition);
+                        ISplittableLootGenerator splitLooter = new SplittableLootGenerator(LootGenerator);
+                        List<ILootGenerator> lootGenerators = splitLooter.GetGenerators(participants.Count);
+                        for (var i = 0; i < participants.Count; i++)
+                        {
+                            LootContainer.Create().SetOwner(participants[i]).AddLoot(lootGenerators[i]).BuildAndAddToZone(zone, participants[i].CurrentPosition);
+                        }
                     }
                 }
                 else
