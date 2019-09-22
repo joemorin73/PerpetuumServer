@@ -12,7 +12,7 @@ using Perpetuum.Threading;
 
 namespace Perpetuum.Services.Relics
 {
-    public class RelicManager
+    public class ZoneRelicManager : IRelicManager
     {
         //Constants
         private const double ACTIVATION_RANGE = 3; //30m
@@ -42,7 +42,7 @@ namespace Perpetuum.Services.Relics
         private TimeSpan _respawnElapsed;
         private TimeSpan _respawnRandomized;
 
-        public RelicManager(IZone zone)
+        public ZoneRelicManager(IZone zone)
         {
             _random = new Random();
             _lock = new ReaderWriterLockSlim();

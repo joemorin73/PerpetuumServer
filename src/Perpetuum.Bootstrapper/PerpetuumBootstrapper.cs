@@ -2376,9 +2376,9 @@ namespace Perpetuum.Bootstrapper
 
         private void RegisterRelics()
         {
-            _builder.RegisterType<RelicManager>();
+            _builder.RegisterType<ZoneRelicManager>().As<IRelicManager>();
 
-            _builder.Register<Func<IZone, RelicManager>>(x =>
+            _builder.Register<Func<IZone, IRelicManager>>(x =>
             {
                 var ctx = x.Resolve<IComponentContext>();
                 return zone =>
@@ -2405,7 +2405,7 @@ namespace Perpetuum.Bootstrapper
                         return null;
                     }
                     //Do not register RelicManagers on zones without the necessary valid entries in reliczoneconfig and relicspawninfo
-                    return ctx.Resolve<RelicManager>(new TypedParameter(typeof(IZone), zone));
+                    return ctx.Resolve<ZoneRelicManager>(new TypedParameter(typeof(IZone), zone));
                 };
             });
         }
@@ -2488,7 +2488,7 @@ namespace Perpetuum.Bootstrapper
                     zone.Environment = ctx.Resolve<ZoneEnvironmentHandler>(new TypedParameter(typeof(IZone), zone));
                     zone.SafeSpawnPoints = ctx.Resolve<ISafeSpawnPointsRepository>(new TypedParameter(typeof(IZone), zone));
                     zone.ZoneSessionFactory = ctx.Resolve<ZoneSession.Factory>();
-                    zone.RelicManager = ctx.Resolve<Func<IZone, RelicManager>>().Invoke(zone);
+                    zone.RelicManager = ctx.Resolve<Func<IZone, IRelicManager>>().Invoke(zone);
 
                     if (configuration.Terraformable)
                     {
