@@ -459,7 +459,6 @@ namespace Perpetuum.Zones.Intrusion
             //set the resulting values
             SetIntrusionOwnerAndPoints(newOwner, newStability);
             ReactStabilityChanges(siteInfo, oldStability, newStability, newOwner, oldOwner);
-
             logEvent.NewOwner = newOwner;
             logEvent.NewStability = newStability;
             InsertIntrusionLog(logEvent);

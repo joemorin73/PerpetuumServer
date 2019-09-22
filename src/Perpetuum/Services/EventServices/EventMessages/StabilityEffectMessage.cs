@@ -13,11 +13,11 @@ namespace Perpetuum.Services.EventServices.EventMessages
         private Player _player;
         private IList<Player> _particpants = new List<Player>();
         public Outpost Outpost { get; }
-
         public bool OverrideRelations { get; }
         public int StabilityChange { get; }
         public int Definition { get; }
         public long? Eid { get; }
+
         public StabilityAffectingEvent(Outpost outpost, Player winner, int def, long? eid, int sapPoints, IList<Player> participants = null, bool overrideRelations = false)
         {
             Outpost = outpost;
