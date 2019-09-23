@@ -1,10 +1,7 @@
 ﻿using Perpetuum.Data;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Perpetuum.Services.Relics
 {
@@ -28,10 +25,9 @@ namespace Perpetuum.Services.Relics
                 .SetParameter("@relicInfoId", id)
                 .Execute()
                 .Select(CreateRelicInfoFromRecord);
-            
+
             return relicinfos.SingleOrDefault();
         }
-
 
         private int _id;
         private string _name;

@@ -1010,9 +1010,10 @@ namespace Perpetuum.Bootstrapper
             RegisterEntity<SparkActivator>();
             RegisterEntity<Gift>();
             RegisterEntity<Paint>();//TODO register new entitydef
-			RegisterEntity<EPBoost>();
+            RegisterEntity<EPBoost>();
             RegisterEntity<Relic>();
-           
+            RegisterEntity<SAPRelic>();
+
 
             _builder.Register<Func<EntityDefault,Entity>>(x =>
             {
@@ -1234,6 +1235,7 @@ namespace Perpetuum.Bootstrapper
 
                 //New Relic Definition for Units
                 ByNamePatternAndFlag<Relic>(DefinitionNames.RELIC, CategoryFlags.undefined);
+                ByNamePatternAndFlag<SAPRelic>(DefinitionNames.RELIC, CategoryFlags.undefined);
 
                 ByCategoryFlags<VisibilityBasedProbeDeployer>(CategoryFlags.cf_proximity_probe_deployer);
                 ByCategoryFlags<Item>(CategoryFlags.cf_gift_packages);
@@ -2405,7 +2407,7 @@ namespace Perpetuum.Bootstrapper
                         return null;
                     }
                     //Do not register RelicManagers on zones without the necessary valid entries in reliczoneconfig and relicspawninfo
-                    return ctx.Resolve<ZoneRelicManager>(new TypedParameter(typeof(IZone), zone));
+                    return ctx.Resolve<IRelicManager>(new TypedParameter(typeof(IZone), zone));
                 };
             });
         }
