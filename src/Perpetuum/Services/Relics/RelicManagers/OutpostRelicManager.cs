@@ -72,7 +72,7 @@ namespace Perpetuum.Services.Relics
 
         protected override Point FindRelicPosition(RelicInfo info)
         {
-            var randomPos = _outpost.CurrentPosition.GetRandomPositionInRange2D(900, 3500);
+            var randomPos = _outpost.CurrentPosition.GetRandomPositionInRange2D(90, 350);
             var posFinder = new ClosestWalkablePositionFinder(_zone, randomPos);
             posFinder.Find(out Position p);
             return p;
