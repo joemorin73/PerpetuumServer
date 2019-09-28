@@ -18,6 +18,7 @@ namespace Perpetuum.Services.Relics
 
         private Outpost _outpost;
         private Random _random;
+        private RelicInfo _sapRelicInfo;
 
         //Beam Draw refresh
         private readonly TimeSpan _relicRefreshRate = TimeSpan.FromSeconds(19.95);
@@ -49,6 +50,7 @@ namespace Perpetuum.Services.Relics
             relicLootGenerator = new RelicLootGenerator();
             _max_relics = 30;
             _respawnRandomized = RollNextSpawnTime();
+            _sapRelicInfo = RelicInfo.GetByNameFromDB("sap_relic_basetype");
         }
 
         protected override IRelic MakeRelic(RelicInfo info, Position position)
@@ -65,7 +67,7 @@ namespace Perpetuum.Services.Relics
 
         protected override RelicInfo GetNextRelicType()
         {
-            return new RelicInfo(1, "SAP_relic", null, null, 50); //Note: loot is associated by the id provided here!
+            return _sapRelicInfo;
         }
 
         protected override Point FindRelicPosition(RelicInfo info)
@@ -76,7 +78,7 @@ namespace Perpetuum.Services.Relics
             return p;
         }
 
-        protected override void RefreshBeam(Relic relic)
+        protected override void RefreshBeam(IRelic relic)
         {
             var position = relic.GetPosition();
             var p = _zone.FixZ(position);
@@ -88,13 +90,11 @@ namespace Perpetuum.Services.Relics
                 .WithState(BeamState.AlignToTerrain)
                 .WithDuration(_relicRefreshRate);
             _zone.CreateBeam(beamBuilder);
-            for (var i = 0; i < 4; i++)
-            {
-                beamBuilder = Beam.NewBuilder().WithType(BeamType.green_20sec).WithTargetPosition(p.AddToZ(3.5 * i + 1.0))
-                    .WithState(BeamState.Hit)
-                    .WithDuration(_relicRefreshRate);
-                _zone.CreateBeam(beamBuilder);
-            }
+            beamBuilder = Beam.NewBuilder().WithType(BeamType.green_20sec).WithTargetPosition(p.AddToZ(10))
+                .WithState(BeamState.Hit)
+                .WithDuration(_relicRefreshRate);
+            _zone.CreateBeam(beamBuilder);
+
         }
     }
 }

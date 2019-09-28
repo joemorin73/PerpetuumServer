@@ -29,6 +29,16 @@ namespace Perpetuum.Services.Relics
             return relicinfos.SingleOrDefault();
         }
 
+        public static RelicInfo GetByNameFromDB(string name)
+        {
+            var relicinfos = Db.Query().CommandText("SELECT TOP 1 id, name, raceid, level, ep FROM relictypes WHERE name = @name")
+                .SetParameter("@name", name)
+                .Execute()
+                .Select(CreateRelicInfoFromRecord);
+
+            return relicinfos.SingleOrDefault();
+        }
+
         private int _id;
         private string _name;
         private int? _raceid;

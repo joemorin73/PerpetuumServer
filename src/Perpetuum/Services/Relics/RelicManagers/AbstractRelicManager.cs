@@ -110,7 +110,7 @@ namespace Perpetuum.Services.Relics
 
 
         //Abstract methods for extension of behaviour'
-        protected abstract void RefreshBeam(Relic relic);
+        protected abstract void RefreshBeam(IRelic relic);
 
         protected abstract Point FindRelicPosition(RelicInfo info);
 
@@ -120,7 +120,7 @@ namespace Perpetuum.Services.Relics
 
         protected virtual IRelic MakeRelic(RelicInfo info, Position position)
         {
-            return Relic.BuildAndAddToZone(info, Zone, position, relicLootGenerator.GenerateLoot(info));
+            return AbstractRelic.BuildAndAddToZone(info, Zone, position, relicLootGenerator.GenerateLoot(info));
         }
 
         //Common methods for all RelicManagers
@@ -202,7 +202,7 @@ namespace Perpetuum.Services.Relics
         {
             using (Lock.Write(THREAD_TIMEOUT))
             {
-                foreach (Relic r in _relics)
+                foreach (var r in _relics)
                 {
                     if (!r.IsAlive())
                     {
@@ -213,7 +213,7 @@ namespace Perpetuum.Services.Relics
             }
             using (Lock.Read(THREAD_TIMEOUT))
             {
-                foreach (Relic r in _relics)
+                foreach (var r in _relics)
                 {
                     RefreshBeam(r);
                 }

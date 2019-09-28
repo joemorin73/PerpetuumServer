@@ -3,6 +3,7 @@ using Perpetuum.Players;
 using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Intrusion;
+using System.Collections.Generic;
 
 namespace Perpetuum.Services.Relics
 {
@@ -13,7 +14,7 @@ namespace Perpetuum.Services.Relics
         [CanBeNull]
         public static IRelic BuildAndAddToZone(RelicInfo info, IZone zone, Position position, RelicLootItems lootItems, Outpost outpost)
         {
-            var relic = (SAPRelic)CreateUnitWithRandomEID(DefinitionNames.RELIC);
+            var relic = (SAPRelic)CreateUnitWithRandomEID(DefinitionNames.RELIC_SAP);
             if (relic == null)
                 return null;
             relic.Init(info, zone, position, lootItems);
@@ -29,8 +30,8 @@ namespace Perpetuum.Services.Relics
 
         public override void PopRelic(Player player)
         {
+            _outpost.PublishSAPEvent(new StabilityAffectingEvent(_outpost, player, this.Definition, this.Eid, 1));
             base.PopRelic(player);
-            _outpost.PublishSAPEvent(new StabilityAffectingEvent(_outpost, player, this.Definition, null, 1));
         }
     }
 }

@@ -1,13 +1,11 @@
-﻿
-
-using Perpetuum.Players;
+﻿using Perpetuum.Players;
 using Perpetuum.Zones;
 using System.Collections.Generic;
 
 namespace Perpetuum.Services.Relics
 {
 
-    public interface IRelic
+    public interface IRelic 
     {
         void Init(RelicInfo info, IZone zone, Position position, RelicLootItems lootItems);
         void SetLoots(RelicLootItems lootItems);
@@ -17,6 +15,7 @@ namespace Perpetuum.Services.Relics
         bool IsAlive();
         void PopRelic(Player player);
         Dictionary<string, object> ToDebugDictionary();
+        void RemoveFromZone();
     }
 
 }

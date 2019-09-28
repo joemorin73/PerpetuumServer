@@ -1235,7 +1235,7 @@ namespace Perpetuum.Bootstrapper
 
                 //New Relic Definition for Units
                 ByNamePatternAndFlag<Relic>(DefinitionNames.RELIC, CategoryFlags.undefined);
-                ByNamePatternAndFlag<SAPRelic>(DefinitionNames.RELIC, CategoryFlags.undefined);
+                ByNamePatternAndFlag<SAPRelic>(DefinitionNames.RELIC_SAP, CategoryFlags.undefined);
 
                 ByCategoryFlags<VisibilityBasedProbeDeployer>(CategoryFlags.cf_proximity_probe_deployer);
                 ByCategoryFlags<Item>(CategoryFlags.cf_gift_packages);

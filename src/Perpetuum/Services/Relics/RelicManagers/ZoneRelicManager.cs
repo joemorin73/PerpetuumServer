@@ -5,12 +5,9 @@ using System.Linq;
 using Perpetuum.Services.RiftSystem;
 using System.Drawing;
 using Perpetuum.ExportedTypes;
-using Perpetuum.Log;
 using Perpetuum.Zones.Beams;
 using System.Threading;
-using Perpetuum.Threading;
 using Perpetuum.Zones.Intrusion;
-using Perpetuum.Units.DockingBases;
 
 namespace Perpetuum.Services.Relics
 {
@@ -112,7 +109,7 @@ namespace Perpetuum.Services.Relics
 
         protected override IRelic MakeRelic(RelicInfo info, Position position)
         {
-            return AbstractRelic.BuildAndAddToZone(info, _zone, position, relicLootGenerator.GenerateLoot(info));
+            return Relic.BuildAndAddToZone(info, _zone, position, relicLootGenerator.GenerateLoot(info));
         }
 
         protected override TimeSpan RollNextSpawnTime()
@@ -166,7 +163,7 @@ namespace Perpetuum.Services.Relics
             return list;
         }
 
-        protected override void RefreshBeam(Relic relic)
+        protected override void RefreshBeam(IRelic relic)
         {
             var info = relic.GetRelicInfo();
             var level = info.GetLevel();

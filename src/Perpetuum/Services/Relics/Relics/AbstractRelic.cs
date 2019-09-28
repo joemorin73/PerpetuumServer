@@ -113,6 +113,11 @@ namespace Perpetuum.Services.Relics
             base.OnRemovedFromZone(zone);
         }
 
+        public void RemoveFromZone()
+        {
+            base.RemoveFromZone();
+        }
+
 
         protected internal override void UpdatePlayerVisibility(Player player)
         {
