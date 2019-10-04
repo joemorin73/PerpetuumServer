@@ -48,7 +48,7 @@ namespace Perpetuum.Services.Relics
             _relics = new List<IRelic>();
             _zone = outpost.Zone;
             relicLootGenerator = new RelicLootGenerator();
-            _max_relics = 30;
+            _max_relics = 3;
             _respawnRandomized = RollNextSpawnTime();
             _sapRelicInfo = RelicInfo.GetByNameFromDB("sap_relic_basetype");
         }
