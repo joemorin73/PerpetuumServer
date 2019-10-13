@@ -34,9 +34,9 @@ namespace Perpetuum.Zones.Intrusion
 
 
         private const int SUBMIT_ITEM_RANGE = 7;
-        private static readonly TimeSpan _submitItemCooldown = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan _submitItemCooldown = TimeSpan.FromMinutes(1.5);
 
-        private static readonly IntRange _requiredItems = new IntRange(3, 4);
+        private static readonly IntRange _requiredItems = new IntRange(5, 6);
 
         private readonly IList<ItemInfo> _itemInfos;
         private readonly ConcurrentDictionary<int, PlayerItemProgress> _playerItemProgresses = new ConcurrentDictionary<int, PlayerItemProgress>();
