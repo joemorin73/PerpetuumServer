@@ -14,7 +14,7 @@ namespace Perpetuum.Services.Relics
     {
         //Spawn time params
         private readonly TimeSpan RESPAWN_RANDOM_WINDOW = TimeSpan.FromHours(1);
-        private readonly TimeSpan _respawnRate = TimeSpan.FromHours(3.5);
+        private readonly TimeSpan _respawnRate = TimeSpan.FromHours(4);
 
         private Outpost _outpost;
         private Random _random;
