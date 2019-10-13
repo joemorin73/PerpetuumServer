@@ -64,21 +64,16 @@ namespace Perpetuum.Zones.Intrusion
         /// </summary>
         private static IList<ItemInfo> GenerateSpecimenProcessingItemList(int count = 5)
         {
-            var result = new Dictionary<int, ItemInfo>();
-
-            while (count > 0)
+            var result = new List<ItemInfo>();
+            while(result.Count < count)
             {
-                var randomItemInfo = _specimenProcessingItems.Where(d => !result.ContainsKey(d.Key)).RandomElement();
-
+                var randomItemInfo = _specimenProcessingItems.RandomElement();
                 var siegeItem = randomItemInfo.Value;
                 var randomQty = FastRandom.NextInt(siegeItem.quantity);
-
                 var itemInfo = new ItemInfo(siegeItem.definition, randomQty);
-                result.Add(randomItemInfo.Key, itemInfo);
-                count--;
+                result.Add(itemInfo);
             }
-
-            return result.Values.ToArray();
+            return result;
         }
 
 
